@@ -126,7 +126,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             key={href}
             href={href}
             onClick={() => setMobileOpen(false)}
-            className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${active ? "bg-white/15 text-white ring-1 ring-white/20 shadow-[0_8px_28px_rgba(90,130,210,0.16)] backdrop-blur-xl" : "text-zinc-400 hover:bg-white/[0.07] hover:text-white"}`}
+            className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${active ? "bg-gradient-to-r from-indigo-100/90 via-violet-100/80 to-sky-100/80 text-indigo-900 ring-1 ring-white shadow-[0_8px_24px_rgba(112,128,190,0.12)]" : "text-slate-500 hover:bg-white/75 hover:text-slate-900"}`}
           >
             <Icon size={18} aria-hidden="true" />
             <span>{t[key]}</span>
@@ -137,35 +137,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div className="min-h-screen bg-transparent text-white md:flex">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-white/10 bg-white/[0.035] backdrop-blur-2xl md:flex">
-        <Link href="/dashboard" className="border-b border-white/10 bg-white/[0.025] px-5 py-6">
+    <div className="min-h-screen bg-transparent text-slate-800 md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200/70 bg-white/45 text-slate-800 shadow-[12px_0_40px_rgba(60,75,110,0.04)] backdrop-blur-2xl md:flex">
+        <Link href="/dashboard" className="border-b border-slate-200/70 bg-white/55 px-5 py-6">
           <span className="block text-xl font-bold tracking-tight">AI Company OS</span>
-          <span className="mt-1 block text-xs text-zinc-500">{t.workspace}</span>
+          <span className="mt-1 block text-xs text-slate-500">{t.workspace}</span>
         </Link>
         {navigation}
-        <div className="border-t border-white/10 p-4">
-          <label htmlFor="desktop-language" className="mb-2 flex items-center gap-2 text-xs text-zinc-500">
+        <div className="border-t border-slate-200/70 p-4">
+          <label htmlFor="desktop-language" className="mb-2 flex items-center gap-2 text-xs text-slate-500">
             <Globe2 size={14} /> {t.language}
           </label>
-          <select id="desktop-language" value={language} onChange={(event) => changeLanguage(event.target.value as Language)} className="min-h-11 w-full rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-white/30">
+          <select id="desktop-language" value={language} onChange={(event) => changeLanguage(event.target.value as Language)} className="min-h-11 w-full rounded-xl border border-slate-200 bg-white/75 px-3 text-sm text-slate-800 outline-none focus:border-indigo-300">
             {languages.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
           </select>
         </div>
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-white/10 bg-[#0b1020]/70 px-4 shadow-lg shadow-black/10 backdrop-blur-2xl md:hidden">
+        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-white/80 bg-white/65 px-4 shadow-lg shadow-slate-900/5 backdrop-blur-2xl md:hidden">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">AI Company OS</p>
-            <p className="truncate text-[11px] text-zinc-500">{t.workspace}</p>
+            <p className="truncate text-[11px] text-slate-500">{t.workspace}</p>
           </div>
           <div className="flex items-center gap-2">
             <label className="sr-only" htmlFor="mobile-language">{t.language}</label>
-            <select id="mobile-language" value={language} onChange={(event) => changeLanguage(event.target.value as Language)} className="min-h-10 max-w-28 rounded-lg border border-white/10 bg-zinc-900 px-2 text-xs text-white">
+            <select id="mobile-language" value={language} onChange={(event) => changeLanguage(event.target.value as Language)} className="min-h-10 max-w-28 rounded-lg border border-slate-200 bg-white/80 px-2 text-xs text-slate-800">
               {languages.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
-            <button type="button" onClick={() => setMobileOpen((open) => !open)} aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-white">
+            <button type="button" onClick={() => setMobileOpen((open) => !open)} aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white bg-white/80 text-slate-700 shadow-sm">
               {mobileOpen ? <X size={19} /> : <Menu size={19} />}
             </button>
           </div>
@@ -173,16 +173,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {mobileOpen && (
           <div className="fixed inset-0 z-40 md:hidden">
-            <button type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-black/70" />
-            <aside className="relative flex h-full w-[min(20rem,86vw)] flex-col border-r border-white/10 bg-[#111a2b]/90 shadow-2xl backdrop-blur-2xl">
-              <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
+            <button type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" />
+            <aside className="relative flex h-full w-[min(20rem,86vw)] flex-col border-r border-white/80 bg-white/85 text-slate-800 shadow-2xl backdrop-blur-2xl">
+              <div className="flex items-center justify-between border-b border-slate-200/70 px-5 py-5">
                 <div><p className="font-semibold">AI Company OS</p><p className="mt-1 text-xs text-zinc-500">{t.workspace}</p></div>
-                <button type="button" onClick={() => setMobileOpen(false)} aria-label="Close menu" className="rounded-lg p-2 text-zinc-400 hover:bg-white/10"><X size={18}/></button>
+                <button type="button" onClick={() => setMobileOpen(false)} aria-label="Close menu" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={18}/></button>
               </div>
               {navigation}
-              <div className="border-t border-white/10 p-4">
-                <label htmlFor="drawer-language" className="mb-2 flex items-center gap-2 text-xs text-zinc-500"><Globe2 size={14}/>{t.language}</label>
-                <select id="drawer-language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="min-h-11 w-full rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white">
+              <div className="border-t border-slate-200/70 p-4">
+                <label htmlFor="drawer-language" className="mb-2 flex items-center gap-2 text-xs text-slate-500"><Globe2 size={14}/>{t.language}</label>
+                <select id="drawer-language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="min-h-11 w-full rounded-xl border border-slate-200 bg-white/80 px-3 text-sm text-slate-800">
                   {languages.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
               </div>
