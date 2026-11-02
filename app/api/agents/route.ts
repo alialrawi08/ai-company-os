@@ -44,10 +44,11 @@ export async function POST(request: Request) {
       .eq("user_id", userId)
       .in("section", ["projects", "crm", "documents"])
       .order("updated_at", { ascending: false })
-      .limit(30);
+      .limit(30)
+      .returns<Array<{ section: string; title: string; description: string | null; status: string; content: unknown; updated_at: string }>>();
     if (contextError) throw contextError;
 
-    const companyContext = (workspaceRecords ?? []).map((item) => {
+    const companyContext = ((workspaceRecords ?? []) as Array<{ section: string; title: string; description: string | null; status: string; content: unknown; updated_at: string }>).map((item) => {
       const record: Record<string, unknown> = {
         section: item.section,
         title: item.title,
