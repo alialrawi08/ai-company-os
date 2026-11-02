@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Check } from "lucide-react";
 
 const plans = [
@@ -99,15 +100,16 @@ export default function Pricing() {
                 ))}
               </div>
 
-              <button
-                className={`mt-10 w-full rounded-2xl py-4 font-semibold transition ${
+              <Link
+                href="/sign-up"
+                className={`mt-10 block w-full rounded-2xl py-4 text-center font-semibold transition ${
                   plan.featured
                     ? "bg-amber-400 text-black hover:opacity-90"
                     : "bg-white text-black hover:bg-zinc-200"
                 }`}
               >
                 Get Started
-              </button>
+              </Link>
             </div>
           ))}
         </div>
