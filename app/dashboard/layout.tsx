@@ -1,197 +1,36 @@
 "use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import {usePathname} from "next/navigation";
+import {useEffect,useState} from "react";
 import RouteTransition from "@/components/dashboard/RouteTransition";
-import {
-  Activity,
-  Bot,
-  FileText,
-  FolderKanban,
-  Globe2,
-  LayoutDashboard,
-  Menu,
-  PhoneCall,
-  Settings,
-  Users,
-  UsersRound,
-  X,
-} from "lucide-react";
-
-type Language = "en" | "sv" | "ar";
-
-const languages: { value: Language; label: string }[] = [
-  { value: "en", label: "English" },
-  { value: "sv", label: "Svenska" },
-  { value: "ar", label: "العربية" },
-];
-
-const copy: Record<Language, {
-  workspace: string;
-  overview: string;
-  assistant: string;
-  arasko: string;
-  agents: string;
-  projects: string;
-  crm: string;
-  documents: string;
-  settings: string;
-  language: string;
-  menu: string;
-}> = {
-  en: {
-    workspace: "Company workspace",
-    overview: "Overview",
-    assistant: "AI Assistant",
-    arasko: "Arasko",
-    agents: "AI Agents",
-    projects: "Projects",
-    crm: "CRM",
-    documents: "Documents",
-    settings: "Settings",
-    language: "Language",
-    menu: "Menu",
-  },
-  sv: {
-    workspace: "Företagsyta",
-    overview: "Översikt",
-    assistant: "AI-assistent",
-    arasko: "Arasko",
-    agents: "AI-agenter",
-    projects: "Projekt",
-    crm: "CRM",
-    documents: "Dokument",
-    settings: "Inställningar",
-    language: "Språk",
-    menu: "Meny",
-  },
-  ar: {
-    workspace: "مساحة عمل الشركة",
-    overview: "نظرة عامة",
-    assistant: "مساعد الذكاء الاصطناعي",
-    arasko: "أراسكـو",
-    agents: "وكلاء الذكاء الاصطناعي",
-    projects: "المشاريع",
-    crm: "إدارة العملاء",
-    documents: "المستندات",
-    settings: "الإعدادات",
-    language: "اللغة",
-    menu: "القائمة",
-  },
-};
-
-const items = [
-  { key: "overview", href: "/dashboard", icon: LayoutDashboard },
-  { key: "assistant", href: "/dashboard/ai", icon: Bot },
-  { key: "arasko", href: "/dashboard/arasko", icon: PhoneCall },
-  { key: "agents", href: "/dashboard/agents", icon: UsersRound },
-  { key: "projects", href: "/dashboard/projects", icon: FolderKanban },
-  { key: "crm", href: "/dashboard/crm", icon: Users },
-  { key: "documents", href: "/dashboard/documents", icon: FileText },
-  { key: "settings", href: "/dashboard/settings", icon: Settings },
-] as const;
-
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const [language, setLanguage] = useState<Language>("en");
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const t = copy[language];
-  function changeLanguage(value: Language) {
-    setLanguage(value);
-    window.dispatchEvent(new CustomEvent("ai-company-os-language-change", { detail: value }));
-  }
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem("ai-company-os-language");
-    if (saved === "en" || saved === "sv" || saved === "ar") setLanguage(saved);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = language;
-    document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
-    window.localStorage.setItem("ai-company-os-language", language);
-  }, [language]);
-
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
-  const navigation = (
-    <nav aria-label={t.menu} className="flex-1 space-y-1 overflow-y-auto p-3">
-      {items.map(({ key, href, icon: Icon }) => {
-        const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href + "/"));
-        return (
-          <Link
-            key={href}
-            href={href}
-            onClick={() => setMobileOpen(false)}
-            className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${active ? "bg-gradient-to-r from-indigo-100/90 via-violet-100/80 to-sky-100/80 text-indigo-900 ring-1 ring-white shadow-[0_8px_24px_rgba(112,128,190,0.12)]" : "text-slate-500 hover:bg-white/75 hover:text-slate-900"}`}
-          >
-            <Icon size={18} aria-hidden="true" />
-            <span>{t[key]}</span>
-          </Link>
-        );
-      })}
-    </nav>
-  );
-
-  return (
-    <div className="min-h-screen bg-transparent text-slate-800 md:flex">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200/70 bg-white/45 text-slate-800 shadow-[12px_0_40px_rgba(60,75,110,0.04)] backdrop-blur-2xl md:flex">
-        <Link href="/dashboard" className="border-b border-slate-200/70 bg-white/55 px-5 py-6">
-          <span className="block text-xl font-bold tracking-tight">AI Company OS</span>
-          <span className="mt-1 block text-xs text-slate-500">{t.workspace}</span>
-        </Link>
-        {navigation}
-        <div className="border-t border-slate-200/70 p-4">
-          <label htmlFor="desktop-language" className="mb-2 flex items-center gap-2 text-xs text-slate-500">
-            <Globe2 size={14} /> {t.language}
-          </label>
-          <select id="desktop-language" value={language} onChange={(event) => changeLanguage(event.target.value as Language)} className="min-h-11 w-full rounded-xl border border-slate-200 bg-white/75 px-3 text-sm text-slate-800 outline-none focus:border-indigo-300">
-            {languages.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-          </select>
-        </div>
-      </aside>
-
-      <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-white/80 bg-white/65 px-4 shadow-lg shadow-slate-900/5 backdrop-blur-2xl md:hidden">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">AI Company OS</p>
-            <p className="truncate text-[11px] text-slate-500">{t.workspace}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="sr-only" htmlFor="mobile-language">{t.language}</label>
-            <select id="mobile-language" value={language} onChange={(event) => changeLanguage(event.target.value as Language)} className="min-h-10 max-w-28 rounded-lg border border-slate-200 bg-white/80 px-2 text-xs text-slate-800">
-              {languages.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-            </select>
-            <button type="button" onClick={() => setMobileOpen((open) => !open)} aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white bg-white/80 text-slate-700 shadow-sm">
-              {mobileOpen ? <X size={19} /> : <Menu size={19} />}
-            </button>
-          </div>
-        </header>
-
-        {mobileOpen && (
-          <div className="fixed inset-0 z-40 md:hidden">
-            <button type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" />
-            <aside className="relative flex h-full w-[min(20rem,86vw)] flex-col border-r border-white/80 bg-white/85 text-slate-800 shadow-2xl backdrop-blur-2xl">
-              <div className="flex items-center justify-between border-b border-slate-200/70 px-5 py-5">
-                <div><p className="font-semibold">AI Company OS</p><p className="mt-1 text-xs text-zinc-500">{t.workspace}</p></div>
-                <button type="button" onClick={() => setMobileOpen(false)} aria-label="Close menu" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={18}/></button>
-              </div>
-              {navigation}
-              <div className="border-t border-slate-200/70 p-4">
-                <label htmlFor="drawer-language" className="mb-2 flex items-center gap-2 text-xs text-slate-500"><Globe2 size={14}/>{t.language}</label>
-                <select id="drawer-language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="min-h-11 w-full rounded-xl border border-slate-200 bg-white/80 px-3 text-sm text-slate-800">
-                  {languages.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </select>
-              </div>
-            </aside>
-          </div>
-        )}
-
-        <main className="min-w-0"><RouteTransition>{children}</RouteTransition></main>
-      </div>
-    </div>
-  );
+import {Activity,Bot,FileText,FolderKanban,Globe2,LayoutDashboard,Menu,PhoneCall,Settings,Users,UsersRound,X,Search,Bell,Command} from "lucide-react";
+type Language="en"|"sv"|"ar";
+const languages:{value:Language;label:string}[]=[{value:"en",label:"English"},{value:"sv",label:"Svenska"},{value:"ar",label:"العربية"}];
+const copy:Record<Language,{workspace:string;overview:string;assistant:string;arasko:string;agents:string;projects:string;crm:string;documents:string;settings:string;language:string;menu:string}>={
+en:{workspace:"Company workspace",overview:"Dashboard",assistant:"AI Assistant",arasko:"Arasko",agents:"AI Agents",projects:"Projects",crm:"CRM",documents:"Documents",settings:"Settings",language:"Language",menu:"Menu"},
+sv:{workspace:"Företagsyta",overview:"Översikt",assistant:"AI-assistent",arasko:"Arasko",agents:"AI-agenter",projects:"Projekt",crm:"CRM",documents:"Dokument",settings:"Inställningar",language:"Språk",menu:"Meny"},
+ar:{workspace:"مساحة عمل الشركة",overview:"لوحة التحكم",assistant:"مساعد الذكاء الاصطناعي",arasko:"أراسكـو",agents:"وكلاء الذكاء الاصطناعي",projects:"المشاريع",crm:"إدارة العملاء",documents:"المستندات",settings:"الإعدادات",language:"اللغة",menu:"القائمة"}};
+const items=[{key:"overview",href:"/dashboard",icon:LayoutDashboard},{key:"assistant",href:"/dashboard/ai",icon:Bot},{key:"arasko",href:"/dashboard/arasko",icon:PhoneCall},{key:"agents",href:"/dashboard/agents",icon:UsersRound},{key:"projects",href:"/dashboard/projects",icon:FolderKanban},{key:"crm",href:"/dashboard/crm",icon:Users},{key:"documents",href:"/dashboard/documents",icon:FileText},{key:"settings",href:"/dashboard/settings",icon:Settings}] as const;
+export default function DashboardLayout({children}:{children:React.ReactNode}){
+ const pathname=usePathname();const[language,setLanguage]=useState<Language>("en");const[mobileOpen,setMobileOpen]=useState(false);const t=copy[language];
+ function changeLanguage(value:Language){setLanguage(value);window.dispatchEvent(new CustomEvent("ai-company-os-language-change",{detail:value}));}
+ useEffect(()=>{const saved=window.localStorage.getItem("ai-company-os-language");if(saved==="en"||saved==="sv"||saved==="ar")setLanguage(saved);},[]);
+ useEffect(()=>{document.documentElement.lang=language;document.documentElement.dir=language==="ar"?"rtl":"ltr";window.localStorage.setItem("ai-company-os-language",language);},[language]);
+ useEffect(()=>{setMobileOpen(false);},[pathname]);
+ const navigation=<nav aria-label={t.menu} className="flex-1 space-y-1.5 overflow-y-auto p-3">{items.map(({key,href,icon:Icon})=>{const active=pathname===href||(href!=="/dashboard"&&pathname.startsWith(href+"/"));return <Link key={href} href={href} onClick={()=>setMobileOpen(false)} className={`group flex min-h-12 items-center gap-3 rounded-2xl border px-3.5 py-3 text-sm font-medium transition-all duration-300 ${active?"border-white/35 bg-gradient-to-r from-indigo-400/40 via-violet-400/30 to-sky-300/20 text-white shadow-[0_8px_28px_rgba(110,110,255,.22)]":"border-transparent text-slate-200/75 hover:border-white/15 hover:bg-white/10 hover:text-white"}`}><Icon size={18}/><span>{t[key]}</span>{active&&<span className="ml-auto h-1.5 w-1.5 rounded-full bg-sky-200 shadow-[0_0_12px_#a5e8ff]"/>}</Link>})}</nav>;
+ return <div className="relative min-h-screen text-white md:flex">
+  <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_52%_0%,rgba(113,132,210,.24),transparent_44%),linear-gradient(135deg,rgba(5,12,25,.76),rgba(13,20,42,.55))]"/>
+  <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col border-r border-white/15 bg-slate-950/35 text-white shadow-[18px_0_60px_rgba(0,0,0,.16)] backdrop-blur-3xl md:flex">
+   <Link href="/dashboard" className="border-b border-white/15 px-5 py-6"><div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/30 bg-gradient-to-br from-white/30 to-white/5 text-xl font-black shadow-lg">A</span><span><strong className="block text-[15px] tracking-wide">AI COMPANY OS</strong><small className="mt-1 block text-[11px] text-slate-300/70">{t.workspace}</small></span></div></Link>
+   <div className="px-5 pb-2 pt-6 text-[10px] font-semibold uppercase tracking-[.22em] text-slate-300/45">Workspace</div>{navigation}
+   <div className="mx-4 mb-4 rounded-2xl border border-white/15 bg-white/[.07] p-3 shadow-inner backdrop-blur-2xl"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-cyan-300 via-indigo-400 to-violet-600 shadow-[0_0_22px_rgba(125,125,255,.55)]"><Activity size={18}/></span><span className="min-w-0"><b className="block text-sm">Arasko</b><small className="text-[11px] text-slate-300/70">Your Executive AI</small></span><span className="ml-auto h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]"/></div></div>
+   <div className="border-t border-white/15 p-4"><label htmlFor="desktop-language" className="mb-2 flex items-center gap-2 text-xs text-slate-300/70"><Globe2 size={14}/>{t.language}</label><select id="desktop-language" value={language} onChange={e=>changeLanguage(e.target.value as Language)} className="min-h-11 w-full rounded-xl border border-white/15 bg-slate-900/40 px-3 text-sm text-white">{languages.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}</select></div>
+  </aside>
+  <div className="min-w-0 flex-1">
+   <header className="sticky top-0 z-30 hidden min-h-[76px] items-center justify-between border-b border-white/15 bg-slate-950/25 px-7 backdrop-blur-3xl lg:flex"><div className="flex w-full max-w-xl items-center gap-3 rounded-2xl border border-white/15 bg-white/[.07] px-4 py-3 text-sm text-slate-200/60 shadow-inner"><Search size={17}/><span>Search your company workspace...</span><kbd className="ml-auto rounded-md border border-white/15 px-2 py-1 text-[10px]">⌘ K</kbd></div><div className="ml-6 flex items-center gap-3"><button aria-label="Notifications" className="relative rounded-xl border border-white/15 bg-white/[.07] p-3 text-slate-200"><Bell size={17}/><i className="absolute right-2 top-2 h-2 w-2 rounded-full bg-violet-400"/></button><button aria-label="Keyboard shortcuts" className="rounded-xl border border-white/15 bg-white/[.07] p-3 text-slate-200"><Command size={17}/></button><div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/[.08] py-1 pl-1 pr-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 text-xs font-bold">OS</span><span className="text-xs text-white/85">Workspace</span></div></div></header>
+   <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-white/15 bg-slate-950/50 px-4 backdrop-blur-2xl lg:hidden"><div className="flex items-center gap-2"><span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 font-bold">A</span><span className="text-sm font-semibold tracking-wide">AI COMPANY OS</span></div><div className="flex items-center gap-2"><label className="sr-only" htmlFor="mobile-language">{t.language}</label><select id="mobile-language" value={language} onChange={e=>changeLanguage(e.target.value as Language)} className="min-h-10 max-w-28 rounded-lg border border-white/15 bg-slate-900/70 px-2 text-xs text-white">{languages.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}</select><button type="button" onClick={()=>setMobileOpen(v=>!v)} aria-label={mobileOpen?"Close menu":"Open menu"} aria-expanded={mobileOpen} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10">{mobileOpen?<X size={19}/>:<Menu size={19}/>}</button></div></header>
+   {mobileOpen&&<div className="fixed inset-0 z-40 lg:hidden"><button aria-label="Close menu" onClick={()=>setMobileOpen(false)} className="absolute inset-0 bg-black/55 backdrop-blur-sm"/><aside className="relative flex h-full w-[min(20rem,86vw)] flex-col border-r border-white/15 bg-[#101a30]/95 text-white shadow-2xl backdrop-blur-3xl"><div className="border-b border-white/15 px-5 py-6 font-semibold tracking-wide">AI COMPANY OS</div>{navigation}<div className="p-4"><label htmlFor="drawer-language" className="mb-2 flex items-center gap-2 text-xs text-slate-300"><Globe2 size={14}/>{t.language}</label><select id="drawer-language" value={language} onChange={e=>changeLanguage(e.target.value as Language)} className="min-h-11 w-full rounded-xl border border-white/15 bg-slate-900/70 px-3 text-sm text-white">{languages.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}</select></div></aside></div>}
+   <main className="min-w-0"><RouteTransition>{children}</RouteTransition></main>
+  </div>
+ </div>;
 }
