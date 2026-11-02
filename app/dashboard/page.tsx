@@ -4,6 +4,6 @@ import DashboardOverview from "@/components/dashboard/DashboardOverview";
 
 export default async function DashboardPage() {
   const user = await currentUser();
-  if (!user) redirect("/login");
-  return <DashboardOverview firstName={user.firstName || ""}/>;
+  if (!user) redirect("/sign-in");
+  return <DashboardOverview firstName={user.firstName || ""} />;
 }
