@@ -161,7 +161,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div className="flex items-center gap-2">
             <label className="sr-only" htmlFor="mobile-language">{t.language}</label>
-            <select id="mobile-language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="min-h-10 max-w-28 rounded-lg border border-white/10 bg-zinc-900 px-2 text-xs text-white">
+            <select id="mobile-language" value={language} onChange={(event) => changeLanguage(event.target.value as Language)} className="min-h-10 max-w-28 rounded-lg border border-white/10 bg-zinc-900 px-2 text-xs text-white">
               {languages.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
             <button type="button" onClick={() => setMobileOpen((open) => !open)} aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-white">
