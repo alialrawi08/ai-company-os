@@ -92,3 +92,15 @@ header,aside{border-color:rgba(126,142,176,.18)!important}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 @media(max-width:767px){body{background-attachment:scroll}main{padding-bottom:max(1.5rem,env(safe-area-inset-bottom))}main [class*="rounded-"][class*="border"]{border-radius:20px}}
+
+main .bg-blue-600 {
+ background:linear-gradient(120deg,#879be3,#8e84cf 58%,#78b7c8)!important;
+ color:#fff!important;box-shadow:0 8px 22px rgba(117,137,209,.2)
+}
+main .bg-zinc-800 {
+ background:rgba(255,255,255,.82)!important;color:#354158!important;
+ border:1px solid rgba(126,142,176,.17)
+}
+main .text-red-200{color:#a13c54!important}
+main .text-emerald-300{color:#27866c!important}
+main .text-amber-300{color:#a36b22!important}
