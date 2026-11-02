@@ -49,6 +49,10 @@ export async function POST(
     return NextResponse.json({ error: "A title of 1–160 characters is required." }, { status: 400 });
   }
 
+  if (body.content !== undefined && (!body.content || typeof body.content !== "object" || Array.isArray(body.content) || JSON.stringify(body.content).length > 50000)) {
+    return NextResponse.json({ error: "Content must be a JSON object no larger than 50000 characters." }, { status: 400 });
+  }
+
   try {
     const { data, error } = await getSupabaseAdmin()
       .from("workspace_items")
@@ -57,7 +61,7 @@ export async function POST(
         section,
         title: body.title.trim(),
         description: typeof body.description === "string" ? body.description.slice(0, 2000) : "",
-        content: body.content && typeof body.content === "object" && !Array.isArray(body.content) && JSON.stringify(body.content).length <= 50000 ? body.content : {},
+        content: body.content ?? {},
         status: typeof body.status === "string" ? body.status.slice(0, 40) : "active",
       } as never)
       .select("id, section, title, description, content, status, created_at, updated_at")
@@ -83,10 +87,16 @@ export async function PATCH(
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body) || typeof body.id !== "string" || !body.id) return NextResponse.json({ error: "A valid item id is required." }, { status: 400 });
 
+  if (body.content !== undefined && (!body.content || typeof body.content !== "object" || Array.isArray(body.content) || JSON.stringify(body.content).length > 50000)) {
+    return NextResponse.json({ error: "Content must be a JSON object no larger than 50000 characters." }, { status: 400 });
+  }
+  if (body.title !== undefined && (typeof body.title !== "string" || !body.title.trim() || body.title.length > 160)) {
+    return NextResponse.json({ error: "Title must be between 1 and 160 characters." }, { status: 400 });
+  }
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  if (typeof body.title === "string" && body.title.trim() && body.title.length <= 160) updates.title = body.title.trim();
+  if (typeof body.title === "string") updates.title = body.title.trim();
   if (typeof body.description === "string") updates.description = body.description.slice(0, 2000);
-  if (body.content && typeof body.content === "object" && !Array.isArray(body.content) && JSON.stringify(body.content).length <= 50000) updates.content = body.content;
+  if (body.content !== undefined) updates.content = body.content;
   if (typeof body.status === "string") updates.status = body.status.slice(0, 40);
 
   try {
