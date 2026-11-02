@@ -78,7 +78,7 @@ export default function WorkspaceSection({ section }: { section: string }) {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Could not save record.");
       const item = payload.item as ApiItem;
-      setItems((current) => [{ id: item.id, title: item.title, detail: item.description || "No details added yet", status: item.status, createdAt: item.created_at }, ...current]);
+      setItems((current) => [{ id: item.id, title: item.title, detail: item.description || "No details added yet", status: item.status, createdAt: item.created_at, crm: section === "crm" ? { company: crmCompany.trim(), email: crmEmail.trim(), phone: crmPhone.trim(), dealValue: crmValue ? Number(crmValue) : null, stage: crmStage, nextFollowUp: crmFollowUp } : undefined }, ...current]);
       setTitle(""); setDetail(""); setCrmCompany(""); setCrmEmail(""); setCrmPhone(""); setCrmValue(""); setCrmStage("lead"); setCrmFollowUp(""); setNotice(`${data.singular} saved`);
       window.setTimeout(() => setNotice(""), 2200);
     } catch (reason) {
