@@ -45,7 +45,7 @@ export async function POST(
   if (!allowedSections.has(section)) return NextResponse.json({ error: "Invalid section" }, { status: 400 });
 
   const body = await request.json().catch(() => null);
-  if (!body || typeof body.title !== "string" || !body.title.trim() || body.title.length > 160) {
+  if (!body || typeof body !== "object" || Array.isArray(body) || typeof body.title !== "string" || !body.title.trim() || body.title.length > 160) {
     return NextResponse.json({ error: "A title of 1–160 characters is required." }, { status: 400 });
   }
 
@@ -57,7 +57,7 @@ export async function POST(
         section,
         title: body.title.trim(),
         description: typeof body.description === "string" ? body.description.slice(0, 2000) : "",
-        content: body.content && typeof body.content === "object" ? body.content : {},
+        content: body.content && typeof body.content === "object" && !Array.isArray(body.content) && JSON.stringify(body.content).length <= 50000 ? body.content : {},
         status: typeof body.status === "string" ? body.status.slice(0, 40) : "active",
       } as never)
       .select("id, section, title, description, content, status, created_at, updated_at")
@@ -81,12 +81,12 @@ export async function PATCH(
   if (!allowedSections.has(section)) return NextResponse.json({ error: "Invalid section" }, { status: 400 });
 
   const body = await request.json().catch(() => null);
-  if (!body || typeof body.id !== "string") return NextResponse.json({ error: "Item id is required." }, { status: 400 });
+  if (!body || typeof body !== "object" || Array.isArray(body) || typeof body.id !== "string" || !body.id) return NextResponse.json({ error: "A valid item id is required." }, { status: 400 });
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (typeof body.title === "string" && body.title.trim() && body.title.length <= 160) updates.title = body.title.trim();
   if (typeof body.description === "string") updates.description = body.description.slice(0, 2000);
-  if (body.content && typeof body.content === "object") updates.content = body.content;
+  if (body.content && typeof body.content === "object" && !Array.isArray(body.content) && JSON.stringify(body.content).length <= 50000) updates.content = body.content;
   if (typeof body.status === "string") updates.status = body.status.slice(0, 40);
 
   try {

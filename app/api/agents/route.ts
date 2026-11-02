@@ -31,9 +31,11 @@ export async function POST(request: Request) {
   if (!process.env.OPENAI_API_KEY) return NextResponse.json({ error: "AI provider is not configured. Add OPENAI_API_KEY to the server environment." }, { status: 503 });
 
   try {
-    const body = await request.json();
-    const role = body.role as AgentRole;
-    const task = typeof body.task === "string" ? body.task.trim() : "";
+    const body: unknown = await request.json().catch(() => null);
+    if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "A JSON object is required." }, { status: 400 });
+    const payload = body as Record<string, unknown>;
+    const role = payload.role as AgentRole;
+    const task = typeof payload.task === "string" ? payload.task.trim() : "";
     if (!roles.includes(role)) return NextResponse.json({ error: "Unknown agent role" }, { status: 400 });
     if (!task || task.length > 12000) return NextResponse.json({ error: "Task must be between 1 and 12000 characters" }, { status: 400 });
 
@@ -69,7 +71,7 @@ export async function POST(request: Request) {
       return record;
     });
 
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 45_000, maxRetries: 1 });
     const response = await client.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-5-mini",
       max_output_tokens: 3000,
