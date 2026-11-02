@@ -59,7 +59,7 @@ export async function POST(
         description: typeof body.description === "string" ? body.description.slice(0, 2000) : "",
         content: body.content && typeof body.content === "object" ? body.content : {},
         status: typeof body.status === "string" ? body.status.slice(0, 40) : "active",
-      })
+      } as never)
       .select("id, section, title, description, content, status, created_at, updated_at")
       .single();
 
@@ -92,7 +92,7 @@ export async function PATCH(
   try {
     const { data, error } = await getSupabaseAdmin()
       .from("workspace_items")
-      .update(updates)
+      .update(updates as never)
       .eq("id", body.id)
       .eq("user_id", userId)
       .eq("section", section)
