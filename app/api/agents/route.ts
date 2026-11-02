@@ -153,10 +153,12 @@ export async function POST(request:Request){
       if(/marketing|growth|brand|campaign|تسويق|نمو|حملة/.test(lower))add("Marketing");
       if(/budget|revenue|cost|price|finance|profit|ميزانية|تكلفة|سعر|ربح/.test(lower))add("Finance");
       if(selected.length===0){add("Research");add("Finance");add("Marketing");}
-      const specialistResults=await Promise.all(selected.map(async specialist=>{const specialistContext=specialist==="Developer"?{workspace:context,repository:await loadRepositoryContext()}:context;return {role:specialist,result:await runModel(client,specialist,task,specialistContext,"Prepare findings for the CEO. Focus on evidence, options, risks, and recommended next actions.")};}));
+      const repositoryContext=await loadRepositoryContext();
+      const ceoContext={...context,repository:repositoryContext};
+      const specialistResults=await Promise.all(selected.map(async specialist=>{const specialistContext=specialist==="Developer"?ceoContext:context;return {role:specialist,result:await runModel(client,specialist,task,specialistContext,"Prepare findings for the CEO. Focus on evidence, options, risks, and recommended next actions.")};}));
       delegated.push(...specialistResults);
       const teamBrief=delegated.map(x=>`## ${x.role} Agent\\n${x.result}`).join("\\n\\n");
-      result=await runModel(client,"CEO",task,context,`You have delegated this request to your specialist team. Their reports follow. Synthesize them into an executive decision brief with: Executive summary; decisions; prioritized action plan (owner, sequence, success metric); dependencies; risks; and items that require the user's explicit approval. Do not invent agent work beyond these reports.\\n\\nSPECIALIST REPORTS:\\n${teamBrief}`);
+      result=await runModel(client,"CEO",task,ceoContext,`You have delegated this request to your specialist team. Their reports follow. Synthesize them into an executive decision brief with: Executive summary; decisions; prioritized action plan (owner, sequence, success metric); dependencies; risks; and items that require the user's explicit approval. Do not invent agent work beyond these reports.\\n\\nSPECIALIST REPORTS:\\n${teamBrief}`);
     }else{
       const agentContext=role==="Developer"?{workspace:context,repository:await loadRepositoryContext()}:context;
       result=await runModel(client,role,task,agentContext);
