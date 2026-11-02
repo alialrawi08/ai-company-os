@@ -42,13 +42,13 @@ async function loadCompanyContext(userId:string) {
     }
     return record;
   });
-  const recentAgentWork=(runsResult.data??[]).map(item=>({
+  const recentRuns=(runsResult.data??[]) as Array<{agent_role:string;task:string;result:string|null;created_at:string}>;\n  const recentAgentWork=recentRuns.map(item=>({
     role:item.agent_role,
     task:redactMemoryText(typeof item.task==="string"?item.task:"",500),
     outcome:redactMemoryText(typeof item.result==="string"?item.result:"",1400),
     date:item.created_at,
   }));
-  const recentActivity=(activityResult.data??[]).map(item=>({
+  const recentEvents=(activityResult.data??[]) as Array<{event_type:string;description:string;created_at:string}>;\n  const recentActivity=recentEvents.map(item=>({
     event:item.event_type,
     summary:redactMemoryText(typeof item.description==="string"?item.description:"",240),
     date:item.created_at,
