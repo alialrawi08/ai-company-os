@@ -1,125 +1,17 @@
 "use client";
-
 import { FormEvent, useState } from "react";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Input from "@/components/ui/Input";
-
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-};
-
-export default function AIPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "مرحبًا! كيف أستطيع مساعدتك اليوم؟",
-    },
-  ]);
-
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function sendMessage(e: FormEvent) {
-    e.preventDefault();
-
-    if (!message.trim() || loading) return;
-
-    const text = message;
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "user",
-        content: text,
-      },
-    ]);
-
-    setMessage("");
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: text,
-        }),
-      });
-
-      const data = await res.json();
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: data.reply ?? "لم يتم استلام رد.",
-        },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "حدث خطأ أثناء الاتصال بـ OpenAI.",
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <main className="min-h-screen bg-[#09090B] text-white">
-      <div className="mx-auto flex h-screen max-w-5xl flex-col p-6">
-        <h1 className="mb-6 text-3xl font-bold">
-          AI Assistant
-        </h1>
-
-        <Card className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-4">
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`max-w-[80%] rounded-2xl p-4 ${
-                  msg.role === "user"
-                    ? "ml-auto bg-blue-600"
-                    : "bg-zinc-800"
-                }`}
-              >
-                {msg.content}
-              </div>
-            ))}
-
-            {loading && (
-              <div className="max-w-[80%] rounded-2xl bg-zinc-800 p-4">
-                AI is typing...
-              </div>
-            )}
-          </div>
-        </Card>
-
-        <form
-          onSubmit={sendMessage}
-          className="mt-6 flex gap-4"
-        >
-          <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="اكتب رسالتك..."
-          />
-
-          <Button
-            type="submit"
-            disabled={loading}
-          >
-            إرسال
-          </Button>
-        </form>
-      </div>
-    </main>
-  );
+import { Bot, Send, LoaderCircle, Sparkles } from "lucide-react";
+import { useDashboardLanguage } from "@/lib/useDashboardLanguage";
+type Message={role:"user"|"assistant";content:string};
+const copy={
+ en:{title:"AI Assistant",welcome:"Hello! How can I help you today?",placeholder:"Write your message…",send:"Send",typing:"AI is thinking…",failed:"The assistant could not connect. Please try again.",empty:"No reply was received.",limit:"Maximum 12,000 characters."},
+ sv:{title:"AI-assistent",welcome:"Hej! Hur kan jag hjälpa dig idag?",placeholder:"Skriv ditt meddelande…",send:"Skicka",typing:"AI tänker…",failed:"Assistenten kunde inte ansluta. Försök igen.",empty:"Inget svar togs emot.",limit:"Maximalt 12 000 tecken."},
+ ar:{title:"مساعد الذكاء الاصطناعي",welcome:"هلا بيك! شلون أگدر أساعدك اليوم؟",placeholder:"اكتب رسالتك…",send:"إرسال",typing:"الذكاء الاصطناعي يفكر…",failed:"تعذر الاتصال بالمساعد. حاول مرة ثانية.",empty:"ما وصلنا رد.",limit:"الحد الأقصى 12,000 حرف."}
+} as const;
+export default function AIPage(){
+ const language=useDashboardLanguage();const t=copy[language];
+ const [messages,setMessages]=useState<Message[]>([{role:"assistant",content:t.welcome}]);
+ const [message,setMessage]=useState("");const [loading,setLoading]=useState(false);const [error,setError]=useState("");
+ async function sendMessage(e:FormEvent){e.preventDefault();const clean=message.trim();if(!clean||loading||clean.length>12000)return;setMessages(p=>[...p,{role:"user",content:clean}]);setMessage("");setLoading(true);setError("");try{const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:clean})});const data=await res.json();if(!res.ok)throw new Error(data.error||t.failed);setMessages(p=>[...p,{role:"assistant",content:data.reply||t.empty}]);}catch(err){setError(err instanceof Error?err.message:t.failed);}finally{setLoading(false);}}
+ return <main className="flex min-h-[calc(100dvh-4rem)] flex-col px-4 py-5 text-white sm:px-8 sm:py-8"><div className="mx-auto flex w-full max-w-5xl flex-1 flex-col"><header className="mb-5 flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]"><Bot size={21}/></div><div><h1 className="text-2xl font-semibold">{t.title}</h1><p className="mt-1 text-xs text-zinc-500">AI Company OS</p></div></header><section aria-live="polite" className="min-h-[40vh] flex-1 space-y-4 overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.025] p-4 sm:p-6">{messages.map((msg,i)=><div key={i} className={msg.role==="user"?"ml-auto max-w-[92%] rounded-2xl bg-blue-600 p-3 text-sm leading-6 sm:max-w-[80%]":"mr-auto max-w-[95%] rounded-2xl bg-zinc-800 p-3 text-sm leading-6 sm:max-w-[85%]"}>{msg.content}</div>)}{loading&&<div className="flex items-center gap-2 text-sm text-zinc-400"><LoaderCircle size={16} className="animate-spin"/>{t.typing}</div>}</section>{error&&<p role="alert" className="mt-3 rounded-xl border border-red-400/20 bg-red-400/[0.05] p-3 text-sm text-red-200">{error}</p>}<form onSubmit={sendMessage} className="mt-4 flex items-end gap-2 sm:gap-3"><textarea value={message} onChange={e=>setMessage(e.target.value)} maxLength={12000} rows={2} placeholder={t.placeholder} className="min-h-12 min-w-0 flex-1 resize-y rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-white/30"/><button type="submit" disabled={loading||!message.trim()} className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black disabled:opacity-50"><Send size={16}/><span className="hidden sm:inline">{t.send}</span></button></form><p className="mt-2 text-[11px] text-zinc-600">{t.limit}</p></div></main>;
 }
