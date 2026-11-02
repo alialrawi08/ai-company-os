@@ -37,18 +37,20 @@ export async function POST(request: Request) {
     if (!roles.includes(role)) return NextResponse.json({ error: "Unknown agent role" }, { status: 400 });
     if (!task || task.length > 12000) return NextResponse.json({ error: "Task must be between 1 and 12000 characters" }, { status: 400 });
 
-    const { data: workspaceRecords, error: contextError } = await getSupabaseAdmin()
+    const workspaceQuery = await getSupabaseAdmin()
       .from("workspace_items")
       .select("section, title, description, status, content, updated_at")
-      .returns<Array<{ section: string; title: string; description: string | null; status: string; content: unknown; updated_at: string }>>()
       .eq("user_id", userId)
       .in("section", ["projects", "crm", "documents"])
       .order("updated_at", { ascending: false })
-      .limit(30)
-      .returns<Array<{ section: string; title: string; description: string | null; status: string; content: unknown; updated_at: string }>>();
+      .limit(30);
+    const { data: workspaceRecords, error: contextError } = workspaceQuery as unknown as {
+      data: Array<{ section: string; title: string; description: string | null; status: string; content: unknown; updated_at: string }> | null;
+      error: Error | null;
+    };
     if (contextError) throw contextError;
 
-    const companyContext = ((workspaceRecords ?? []) as Array<{ section: string; title: string; description: string | null; status: string; content: unknown; updated_at: string }>).map((item) => {
+    const companyContext = (workspaceRecords ?? []).map((item) => {
       const record: Record<string, unknown> = {
         section: item.section,
         title: item.title,
