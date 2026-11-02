@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Bot, FolderKanban, Users, FileText, Settings, UsersRound } from "lucide-react";
+import { LayoutDashboard, Bot, FolderKanban, Users, FileText, Settings, UsersRound, PhoneCall } from "lucide-react";
 
 const menuItems = [
   { title: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { title: "AI Assistant", href: "/dashboard/ai", icon: Bot },
+  { title: "Arasko", href: "/dashboard/arasko", icon: PhoneCall },
   { title: "AI Agents", href: "/dashboard/agents", icon: UsersRound },
   { title: "Projects", href: "/dashboard/projects", icon: FolderKanban },
   { title: "CRM", href: "/dashboard/crm", icon: Users },
