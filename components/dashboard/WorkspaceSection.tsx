@@ -54,6 +54,7 @@ export default function WorkspaceSection({ section }: { section: string }) {
           detail: item.description || "No details added yet",
           status: item.status,
           createdAt: item.created_at,
+          crm: section === "crm" ? (item.content as CRMDetails | undefined) : undefined,
         })));
       })
       .catch((reason: Error) => { if (active) setError(reason.message); })
