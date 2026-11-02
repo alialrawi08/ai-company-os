@@ -24,7 +24,9 @@ const copy = {
  ar: { badge:"مساعدك التنفيذي الذكي", subtitle:"مساعدك الشخصي لمتابعة AI Company OS", end:"إنهاء جلسة الصوت", start:"بدء محادثة صوتية", company:"يفهم نشاط الشركة", companyDesc:"يراجع المشاريع ونشاط الوكلاء الخاص بحسابك.", voice:"محادثة صوتية", voiceDesc:"احچي باستخدام المايك واسمع الرد من جهازك.", free:"ابدأ بدون تكاليف إضافية", freeDesc:"ما تحتاج رقم هاتف أو اشتراك اتصالات إضافي.", conversation:"محادثة Arasko", listening:"أسمعك هسه...", speaking:"Arasko يحچي...", thinking:"Arasko يفكر...", ready:"جاهز للمحادثة", mute:"كتم الصوت", unmute:"تشغيل الصوت", you:"أنت", thinkingReply:"Arasko يجهز الجواب...", unsupported:"الإدخال الصوتي غير مدعوم بهذا المتصفح. تگدر تكتب بداله.", micError:"ما كدرت أسمعك. تأكد من صلاحية المايكروفون وحاول مرة ثانية.", busyMic:"المايكروفون مشغول. حاول مرة ثانية.", placeholder:"اكتب لـ Arasko أو استخدم المايك...", stop:"إيقاف الاستماع", speak:"تحدث", foot:"الصوت يعتمد على دعم المتصفح وصلاحية المايكروفون. المحادثة الصوتية تعمل فقط والصفحة مفتوحة؛ ماكو مكالمات هاتفية أو استماع بالخلفية. الردود الذكية تستخدم مزود AI الحالي وقد تستهلك رصيد API.", starters:["اعطني فحص سريع لوضع الشركة.","شنو أهم شي أركز عليه اليوم؟","راجع آخر نشاط للوكلاء."] }
 } as const;
 
-export default function AraskoPage() {\n  const language = useDashboardLanguage();\n  const t = copy[language];
+export default function AraskoPage() {
+  const language = useDashboardLanguage();
+  const t = copy[language];
   const [messages, setMessages] = useState<Message[]>([{ role: "assistant", content: language === "sv" ? "Hej! Jag är Arasko, din AI-chef i AI Company OS. Jag kan granska företagets aktivitet, projekt och agentuppgifter och hjälpa dig prioritera. Vad ska vi börja med?" : language === "en" ? "Hi, I’m Arasko, your AI executive in AI Company OS. I can review company activity, projects, and agent tasks and help you set priorities. Where should we start?" : "هلا بيك، أني Arasko. مساعدك التنفيذي في AI Company OS. أگدر أراجع نشاط الشركة ومشاريعك ومهام الوكلاء، وأساعدك ترتب أولوياتك. شنو نبدأ بيه؟" }]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
