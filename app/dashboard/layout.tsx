@@ -96,6 +96,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [language, setLanguage] = useState<Language>("en");
   const [mobileOpen, setMobileOpen] = useState(false);
   const t = copy[language];
+  function changeLanguage(value: Language) {
+    setLanguage(value);
+    window.dispatchEvent(new CustomEvent("ai-company-os-language-change", { detail: value }));
+  }
 
   useEffect(() => {
     const saved = window.localStorage.getItem("ai-company-os-language");
@@ -143,7 +147,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <label htmlFor="desktop-language" className="mb-2 flex items-center gap-2 text-xs text-zinc-500">
             <Globe2 size={14} /> {t.language}
           </label>
-          <select id="desktop-language" value={language} onChange={(event) => setLanguage(event.target.value as Language)} className="min-h-11 w-full rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-white/30">
+          <select id="desktop-language" value={language} onChange={(event) => changeLanguage(event.target.value as Language)} className="min-h-11 w-full rounded-xl border border-white/10 bg-zinc-900 px-3 text-sm text-white outline-none focus:border-white/30">
             {languages.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
           </select>
         </div>
