@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, Plus, FolderKanban, Users, FileText, Bot, Settings, Trash2, ArrowUpRight, Sparkles } from "lucide-react";
+import { Search, Plus, FolderKanban, Users, FileText, Bot, Settings, Trash2, ArrowUpRight, Sparkles, Pencil, Check, X } from "lucide-react";
 
 type Item = { id: string; title: string; detail: string; status: string; createdAt: string };
 const config: Record<string, { title: string; description: string; singular: string; icon: typeof FolderKanban; examples: string[] }> = {
@@ -24,6 +24,9 @@ export default function WorkspaceSection({ section }: { section: string }) {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDetail, setEditDetail] = useState("");
 
   useEffect(() => {
     if (!data) return;
@@ -75,6 +78,24 @@ export default function WorkspaceSection({ section }: { section: string }) {
     } finally { setSaving(false); }
   }
 
+  function beginEdit(item: Item) {
+    setEditingId(item.id); setEditTitle(item.title); setEditDetail(item.detail === "No details added yet" ? "" : item.detail); setError("");
+  }
+
+  async function saveEdit(id: string) {
+    if (!editTitle.trim() || saving) return;
+    setSaving(true); setError("");
+    try {
+      const response = await fetch(`/api/workspace/${section}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, title: editTitle.trim(), description: editDetail.trim() }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Could not update record.");
+      const updated = payload.item as ApiItem;
+      setItems(current => current.map(item => item.id === id ? { ...item, title: updated.title, detail: updated.description || "No details added yet", status: updated.status } : item));
+      setEditingId(null); setNotice(`${data.singular} updated`); window.setTimeout(() => setNotice(""), 2200);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not update record."); }
+    finally { setSaving(false); }
+  }
+
   async function deleteItem(id: string) {
     setError("");
     try {
@@ -97,7 +118,7 @@ export default function WorkspaceSection({ section }: { section: string }) {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h2 className="font-medium">Workspace records <span className="ml-2 text-xs text-zinc-500">{items.length}</span></h2><div className="relative"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"/><input value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search..." className="w-52 rounded-xl border border-white/10 bg-black/20 py-2 pl-9 pr-3 text-sm outline-none focus:border-white/30"/></div></div>
-          <div className="space-y-2">{filtered.map((item)=><article key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] bg-white/[0.025] p-4"><div className="min-w-0"><h3 className="truncate text-sm font-medium">{item.title}</h3><p className="mt-1 truncate text-xs text-zinc-500">{item.detail}</p></div><div className="flex shrink-0 items-center gap-3"><span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] text-zinc-400">{item.status}</span><button aria-label={`Delete ${item.title}`} onClick={()=>deleteItem(item.id)} className="rounded-lg p-2 text-zinc-500 hover:bg-red-500/10 hover:text-red-300"><Trash2 size={15}/></button></div></article>)}
+          <div className="space-y-2">{filtered.map((item)=><article key={item.id} className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-4">{editingId===item.id ? <div className="space-y-3"><input value={editTitle} onChange={e=>setEditTitle(e.target.value)} maxLength={160} aria-label="Edit title" className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-cyan-200/40"/><textarea value={editDetail} onChange={e=>setEditDetail(e.target.value)} maxLength={2000} rows={3} aria-label="Edit details" className="w-full resize-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-cyan-200/40"/><div className="flex justify-end gap-2"><button onClick={()=>setEditingId(null)} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-zinc-300"><X size={14}/></button><button disabled={saving||!editTitle.trim()} onClick={()=>void saveEdit(item.id)} className="flex items-center gap-1 rounded-lg bg-cyan-200 px-3 py-2 text-xs font-semibold text-slate-950 disabled:opacity-40"><Check size={14}/> Save</button></div></div> : <div className="flex items-center justify-between gap-3"><div className="min-w-0"><h3 className="truncate text-sm font-medium">{item.title}</h3><p className="mt-1 truncate text-xs text-zinc-500">{item.detail}</p></div><div className="flex shrink-0 items-center gap-2"><span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] text-zinc-400">{item.status}</span><button aria-label={`Edit ${item.title}`} onClick={()=>beginEdit(item)} className="rounded-lg p-2 text-zinc-500 hover:bg-white/10 hover:text-white"><Pencil size={15}/></button><button aria-label={`Delete ${item.title}`} onClick={()=>deleteItem(item.id)} className="rounded-lg p-2 text-zinc-500 hover:bg-red-500/10 hover:text-red-300"><Trash2 size={15}/></button></div></div>}</article>)}
           {!ready && <div className="py-10 text-center text-sm text-zinc-500">Loading workspace…</div>}
           {ready && filtered.length===0 && <div className="rounded-xl border border-dashed border-white/10 px-4 py-12 text-center text-sm text-zinc-500">{query ? "No matching records." : "Nothing here yet. Add your first record."}</div>}</div>
         </section>
