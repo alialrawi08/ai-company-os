@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       user_id: userId,
       event_type: "agent.completed",
       description: `${role} agent completed a task`,
-      metadata: { run_id: run.id },
+      metadata: { agent_role: role.toLowerCase() },
     } as never);
 
     return NextResponse.json({ role, result, run });
