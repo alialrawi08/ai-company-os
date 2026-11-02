@@ -17,9 +17,14 @@ main [class*="rounded-"][class*="border"]{border-color:rgba(255,255,255,.18)}
 main [class*="rounded-"][class*="bg-white"],main [class*="rounded-"][class*="bg-zinc-900"],main [class*="rounded-"][class*="bg-zinc-950"],main [class*="rounded-"][class*="bg-black"],main [class*="rounded-"][class*="bg-[#"]{background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.055))!important;border:1px solid rgba(255,255,255,.2);box-shadow:0 18px 48px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.2);backdrop-filter:blur(28px) saturate(150%);-webkit-backdrop-filter:blur(28px) saturate(150%)}
 main [class*="bg-white/"],main [class*="bg-black/"],main [class*="bg-zinc-"]{background-color:rgba(255,255,255,.075)!important}
 main [class*="border-white/"]{border-color:rgba(255,255,255,.18)!important}
-main button[class*="rounded-"],main a[class*="rounded-"]{transition:transform .32s cubic-bezier(.22,1,.36,1),box-shadow .32s ease,background .32s ease,border-color .32s ease}
-main button[class*="rounded-"]:hover,main a[class*="rounded-"]:hover{border-color:rgba(205,220,232,.5);box-shadow:0 12px 34px rgba(65,94,125,.22)}
-main button[class*="rounded-"]:active,main a[class*="rounded-"]:active{transform:scale(.985)}
+main button,main a[ class*="rounded-"]{ -webkit-tap-highlight-color:transparent }
+main button[class*="rounded-"],main a[class*="rounded-"]{position:relative;isolation:isolate;overflow:hidden;transition:transform .38s cubic-bezier(.2,.8,.2,1),box-shadow .38s ease,background .38s ease,border-color .38s ease,filter .38s ease}
+main button[class*="rounded-"]::before,main a[class*="rounded-"]::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(115deg,transparent 15%,rgba(255,255,255,.18) 48%,transparent 78%);transform:translateX(-130%);transition:transform .75s cubic-bezier(.2,.8,.2,1)}
+main button[class*="rounded-"]:hover,main a[class*="rounded-"]:hover{transform:translateY(-2px);border-color:rgba(218,231,241,.55);box-shadow:0 14px 34px rgba(65,94,125,.25),0 0 0 1px rgba(255,255,255,.06) inset;filter:brightness(1.06)}
+main button[class*="rounded-"]:hover::before,main a[class*="rounded-"]:hover::before{transform:translateX(130%)}
+main button[class*="rounded-"]:active,main a[class*="rounded-"]:active{transform:translateY(0) scale(.975);filter:brightness(.98);transition-duration:.12s}
+main button:focus-visible,main a:focus-visible{outline:2px solid rgba(210,229,242,.9);outline-offset:3px}
+main button:disabled{opacity:.55;transform:none;filter:none;box-shadow:none}
 main button.bg-white,main button.bg-cyan-200,main button.bg-blue-600,main button[type="submit"]{color:#fff!important;background:linear-gradient(115deg,#70869a 0%,#8799aa 56%,#66879a 100%)!important;border:1px solid rgba(255,255,255,.42)!important;box-shadow:0 8px 28px rgba(85,115,145,.25),inset 0 1px 0 rgba(255,255,255,.4)!important}
 main button.bg-white:hover,main button.bg-cyan-200:hover,main button.bg-blue-600:hover,main button[type="submit"]:hover{filter:brightness(1.08);box-shadow:0 14px 34px rgba(85,115,145,.32)!important;transform:translateY(-1px)}
 main button:disabled{cursor:not-allowed}
