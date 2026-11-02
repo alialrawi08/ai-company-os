@@ -125,7 +125,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             key={href}
             href={href}
             onClick={() => setMobileOpen(false)}
-            className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${active ? "bg-white text-zinc-950 shadow-sm" : "text-zinc-400 hover:bg-white/[0.07] hover:text-white"}`}
+            className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${active ? "bg-white/15 text-white ring-1 ring-white/20 shadow-[0_8px_28px_rgba(90,130,210,0.16)] backdrop-blur-xl" : "text-zinc-400 hover:bg-white/[0.07] hover:text-white"}`}
           >
             <Icon size={18} aria-hidden="true" />
             <span>{t[key]}</span>
@@ -136,9 +136,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white md:flex">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-white/10 bg-zinc-950 md:flex">
-        <Link href="/dashboard" className="border-b border-white/10 px-5 py-6">
+    <div className="min-h-screen bg-transparent text-white md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-white/10 bg-white/[0.035] backdrop-blur-2xl md:flex">
+        <Link href="/dashboard" className="border-b border-white/10 bg-white/[0.025] px-5 py-6">
           <span className="block text-xl font-bold tracking-tight">AI Company OS</span>
           <span className="mt-1 block text-xs text-zinc-500">{t.workspace}</span>
         </Link>
@@ -154,7 +154,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-white/10 bg-[#09090b]/95 px-4 backdrop-blur md:hidden">
+        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-white/10 bg-[#0b1020]/70 px-4 shadow-lg shadow-black/10 backdrop-blur-2xl md:hidden">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">AI Company OS</p>
             <p className="truncate text-[11px] text-zinc-500">{t.workspace}</p>
@@ -173,7 +173,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {mobileOpen && (
           <div className="fixed inset-0 z-40 md:hidden">
             <button type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-black/70" />
-            <aside className="relative flex h-full w-[min(20rem,86vw)] flex-col border-r border-white/10 bg-zinc-950 shadow-2xl">
+            <aside className="relative flex h-full w-[min(20rem,86vw)] flex-col border-r border-white/10 bg-[#111a2b]/90 shadow-2xl backdrop-blur-2xl">
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
                 <div><p className="font-semibold">AI Company OS</p><p className="mt-1 text-xs text-zinc-500">{t.workspace}</p></div>
                 <button type="button" onClick={() => setMobileOpen(false)} aria-label="Close menu" className="rounded-lg p-2 text-zinc-400 hover:bg-white/10"><X size={18}/></button>
