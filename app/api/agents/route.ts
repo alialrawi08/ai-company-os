@@ -1,9 +1,29 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { auth } from "@clerk/nextjs/server";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 const roles = ["CEO", "Research", "Sales", "Developer", "Marketing", "Finance", "Support"] as const;
 type AgentRole = (typeof roles)[number];
+
+export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+
+  try {
+    const { data, error } = await getSupabaseAdmin()
+      .from("agent_runs")
+      .select("id, agent_role, task, result, status, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    return NextResponse.json({ runs: data ?? [] });
+  } catch (error) {
+    console.error("Agent history load failed", error);
+    return NextResponse.json({ error: "Could not load agent history. Check database configuration." }, { status: 503 });
+  }
+}
 
 export async function POST(request: Request) {
   const { userId } = await auth();
@@ -23,9 +43,31 @@ export async function POST(request: Request) {
       instructions: `You are the ${role} specialist inside AI Company OS. Be practical, structured, honest about uncertainty, and never claim to have taken external actions. Give the user a useful deliverable and clear next steps.`,
       input: task,
     });
-    return NextResponse.json({ role, result: response.output_text });
+
+    const result = response.output_text || "";
+    const { data: run, error: saveError } = await getSupabaseAdmin()
+      .from("agent_runs")
+      .insert({
+        user_id: userId,
+        agent_role: role.toLowerCase(),
+        task,
+        result,
+        status: "completed",
+      } as never)
+      .select("id, agent_role, task, result, status, created_at")
+      .single();
+    if (saveError) throw saveError;
+
+    await getSupabaseAdmin().from("activity_logs").insert({
+      user_id: userId,
+      event_type: "agent.completed",
+      description: `${role} agent completed a task`,
+      metadata: { run_id: run.id },
+    } as never);
+
+    return NextResponse.json({ role, result, run });
   } catch (error) {
     console.error("Agent execution failed", error);
-    return NextResponse.json({ error: "The agent could not complete this task." }, { status: 500 });
+    return NextResponse.json({ error: "The agent could not complete or save this task." }, { status: 500 });
   }
 }
