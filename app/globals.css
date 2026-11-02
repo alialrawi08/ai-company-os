@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+  --background: #070b14;
+  --foreground: #f4f7ff;
+  --glass: rgba(255,255,255,.055);
+  --glass-strong: rgba(255,255,255,.085);
+  --glass-border: rgba(255,255,255,.12);
+  --muted: #9ba8bd;
+  --accent: #a5c8ff;
 }
 
 @theme inline {
@@ -12,15 +18,92 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+* { box-sizing: border-box; }
+
+html { min-height: 100%; background: var(--background); }
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(ellipse at 12% 4%, rgba(67, 113, 190, .23), transparent 34rem),
+    radial-gradient(ellipse at 88% 18%, rgba(112, 79, 184, .17), transparent 30rem),
+    radial-gradient(ellipse at 52% 100%, rgba(42, 105, 128, .13), transparent 36rem),
+    linear-gradient(145deg, #070b14 0%, #0b1020 48%, #080c16 100%);
+  background-attachment: fixed;
+}
+
+::selection { background: rgba(147, 197, 253, .3); color: white; }
+
+button, input, textarea, select { font: inherit; }
+button, a, select { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+a { text-decoration: none; }
+
+input, textarea, select {
+  color: #f4f7ff;
+  background: rgba(255,255,255,.045);
+  border-color: rgba(255,255,255,.14);
+  border-radius: 14px;
+}
+input::placeholder, textarea::placeholder { color: #78869d; }
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: rgba(151,190,255,.65);
+  box-shadow: 0 0 0 3px rgba(115,160,235,.13);
+}
+
+main {
+  min-height: calc(100vh - 4rem);
+  background: transparent;
+}
+
+main [class*="rounded-"][class*="border"] {
+  border-color: var(--glass-border);
+}
+
+main [class*="rounded-"][class*="bg-white"],
+main [class*="rounded-"][class*="bg-zinc-900"],
+main [class*="rounded-"][class*="bg-zinc-950"],
+main [class*="rounded-"][class*="bg-black"] {
+  background: linear-gradient(145deg, rgba(255,255,255,.085), rgba(255,255,255,.028)) !important;
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 18px 55px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter: blur(22px) saturate(145%);
+  -webkit-backdrop-filter: blur(22px) saturate(145%);
+}
+
+main button[class*="rounded-"],
+main a[class*="rounded-"] {
+  transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+main button[class*="rounded-"]:hover,
+main a[class*="rounded-"]:hover {
+  border-color: rgba(177,207,255,.32);
+  box-shadow: 0 8px 28px rgba(20,45,85,.2);
+}
+main button[class*="rounded-"]:active,
+main a[class*="rounded-"]:active { transform: scale(.985); }
+
+main [class*="bg-white/"] { background-color: rgba(255,255,255,.075) !important; }
+main [class*="border-white/"] { border-color: rgba(255,255,255,.12) !important; }
+
+header, aside {
+  border-color: rgba(255,255,255,.1) !important;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  main > div { animation: glass-enter .45s ease both; }
+  @keyframes glass-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (max-width: 767px) {
+  body { background-attachment: scroll; }
+  main { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+  main [class*="rounded-"][class*="border"] { border-radius: 20px; }
 }
