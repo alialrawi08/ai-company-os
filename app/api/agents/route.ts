@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     const { data: workspaceRecords, error: contextError } = await getSupabaseAdmin()
       .from("workspace_items")
       .select("section, title, description, status, content, updated_at")
+      .returns<Array<{ section: string; title: string; description: string | null; status: string; content: unknown; updated_at: string }>>()
       .eq("user_id", userId)
       .in("section", ["projects", "crm", "documents"])
       .order("updated_at", { ascending: false })
