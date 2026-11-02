@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import RouteTransition from "@/components/dashboard/RouteTransition";
 import {
   Activity,
   Bot,
@@ -189,7 +190,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         )}
 
-        <main className="min-w-0">{children}</main>
+        <main className="min-w-0"><RouteTransition>{children}</RouteTransition></main>
       </div>
     </div>
   );
