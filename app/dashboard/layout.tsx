@@ -3,14 +3,14 @@ import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useEffect,useState} from "react";
 import RouteTransition from "@/components/dashboard/RouteTransition";
-import {Activity,Bot,FileText,FolderKanban,Globe2,LayoutDashboard,Menu,PhoneCall,Settings,Users,UsersRound,X,Search,Bell,Command} from "lucide-react";
+import {Activity,Bot,FileText,FolderKanban,Globe2,LayoutDashboard,Menu,PhoneCall,Settings,Users,UsersRound,X,Search,Bell,Command,ShieldCheck} from "lucide-react";
 type Language="en"|"sv"|"ar";
 const languages:{value:Language;label:string}[]=[{value:"en",label:"English"},{value:"sv",label:"Svenska"},{value:"ar",label:"العربية"}];
-const copy:Record<Language,{workspace:string;overview:string;assistant:string;arasko:string;agents:string;projects:string;crm:string;documents:string;settings:string;language:string;menu:string}>={
-en:{workspace:"Company workspace",overview:"Dashboard",assistant:"AI Assistant",arasko:"Arasko",agents:"AI Agents",projects:"Projects",crm:"CRM",documents:"Documents",settings:"Settings",language:"Language",menu:"Menu"},
-sv:{workspace:"Företagsyta",overview:"Översikt",assistant:"AI-assistent",arasko:"Arasko",agents:"AI-agenter",projects:"Projekt",crm:"CRM",documents:"Dokument",settings:"Inställningar",language:"Språk",menu:"Meny"},
-ar:{workspace:"مساحة عمل الشركة",overview:"لوحة التحكم",assistant:"مساعد الذكاء الاصطناعي",arasko:"أراسكـو",agents:"وكلاء الذكاء الاصطناعي",projects:"المشاريع",crm:"إدارة العملاء",documents:"المستندات",settings:"الإعدادات",language:"اللغة",menu:"القائمة"}};
-const items=[{key:"overview",href:"/dashboard",icon:LayoutDashboard},{key:"assistant",href:"/dashboard/ai",icon:Bot},{key:"arasko",href:"/dashboard/arasko",icon:PhoneCall},{key:"agents",href:"/dashboard/agents",icon:UsersRound},{key:"projects",href:"/dashboard/projects",icon:FolderKanban},{key:"crm",href:"/dashboard/crm",icon:Users},{key:"documents",href:"/dashboard/documents",icon:FileText},{key:"settings",href:"/dashboard/settings",icon:Settings}] as const;
+const copy:Record<Language,{workspace:string;overview:string;assistant:string;arasko:string;agents:string;approvals:string;projects:string;crm:string;documents:string;settings:string;language:string;menu:string}>={
+en:{workspace:"Company workspace",overview:"Dashboard",assistant:"AI Assistant",arasko:"Arasko",agents:"AI Agents",approvals:"Approvals",projects:"Projects",crm:"CRM",documents:"Documents",settings:"Settings",language:"Language",menu:"Menu"},
+sv:{workspace:"Företagsyta",overview:"Översikt",assistant:"AI-assistent",arasko:"Arasko",agents:"AI-agenter",approvals:"Godkännanden",projects:"Projekt",crm:"CRM",documents:"Dokument",settings:"Inställningar",language:"Språk",menu:"Meny"},
+ar:{workspace:"مساحة عمل الشركة",overview:"لوحة التحكم",assistant:"مساعد الذكاء الاصطناعي",arasko:"أراسكـو",agents:"وكلاء الذكاء الاصطناعي",approvals:"الموافقات",projects:"المشاريع",crm:"إدارة العملاء",documents:"المستندات",settings:"الإعدادات",language:"اللغة",menu:"القائمة"}};
+const items=[{key:"overview",href:"/dashboard",icon:LayoutDashboard},{key:"assistant",href:"/dashboard/ai",icon:Bot},{key:"arasko",href:"/dashboard/arasko",icon:PhoneCall},{key:"agents",href:"/dashboard/agents",icon:UsersRound},{key:"approvals",href:"/dashboard/approvals",icon:ShieldCheck},{key:"projects",href:"/dashboard/projects",icon:FolderKanban},{key:"crm",href:"/dashboard/crm",icon:Users},{key:"documents",href:"/dashboard/documents",icon:FileText},{key:"settings",href:"/dashboard/settings",icon:Settings}] as const;
 export default function DashboardLayout({children}:{children:React.ReactNode}){
  const pathname=usePathname();const[language,setLanguage]=useState<Language>("en");const[mobileOpen,setMobileOpen]=useState(false);const t=copy[language];
  function changeLanguage(value:Language){setLanguage(value);window.dispatchEvent(new CustomEvent("ai-company-os-language-change",{detail:value}));}
