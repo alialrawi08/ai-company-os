@@ -1,106 +1,31 @@
 @import "tailwindcss";
 
-:root {
-  color-scheme: light;
-  --background: #f4f6fb;
-  --foreground: #172033;
-  --glass: rgba(255,255,255,.66);
-  --glass-strong: rgba(255,255,255,.84);
-  --glass-border: rgba(255,255,255,.82);
-  --muted: #77839a;
-  --accent: #7189d8;
-}
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+:root{color-scheme:dark;--background:#08111f;--foreground:#f6f7ff;--glass:rgba(21,32,57,.48);--glass-border:rgba(255,255,255,.2);--muted:#b5c0d8;--accent:#9b8cff}
+@theme inline{--color-background:var(--background);--color-foreground:var(--foreground);--font-sans:var(--font-geist-sans);--font-mono:var(--font-geist-mono)}
 *{box-sizing:border-box}
-html{min-height:100%;background:var(--background);scroll-behavior:smooth}
-body{
-  min-height:100vh;margin:0;color:var(--foreground);
-  font-family:Arial,Helvetica,sans-serif;
-  background:
-    radial-gradient(ellipse at 10% 0%,rgba(190,205,255,.55),transparent 36rem),
-    radial-gradient(ellipse at 92% 12%,rgba(220,205,255,.42),transparent 32rem),
-    radial-gradient(ellipse at 50% 100%,rgba(193,226,239,.42),transparent 38rem),
-    linear-gradient(145deg,#f8f9fd 0%,#edf1f8 52%,#f7f8fc 100%);
-  background-attachment:fixed;
-}
-::selection{background:rgba(139,157,224,.25);color:#172033}
+html{min-height:100%;background:#08111f;scroll-behavior:smooth}
+body{min-height:100vh;margin:0;color:var(--foreground);font-family:Arial,Helvetica,sans-serif;background:radial-gradient(ellipse at 12% 8%,rgba(78,105,183,.36),transparent 36rem),radial-gradient(ellipse at 88% 12%,rgba(120,83,190,.26),transparent 34rem),linear-gradient(135deg,#07101e 0%,#101b32 52%,#11172b 100%);background-attachment:fixed}
+::selection{background:rgba(159,145,255,.4);color:white}
 button,input,textarea,select{font:inherit}
 button,a,select{-webkit-tap-highlight-color:transparent}
-button{cursor:pointer}
-a{text-decoration:none}
-input,textarea,select{
- color:#202a3d;background:rgba(255,255,255,.72);
- border:1px solid rgba(123,139,174,.2);border-radius:14px;
-}
-input::placeholder,textarea::placeholder{color:#9aa4b6}
-input:focus,textarea:focus,select:focus{
- outline:none;border-color:rgba(117,139,211,.65);
- box-shadow:0 0 0 4px rgba(128,149,218,.13)
-}
-main{min-height:calc(100vh - 4rem);background:transparent;color:#202a3d}
-main .text-white{color:#202a3d!important}
-main .text-zinc-300{color:#45516a!important}
-main .text-zinc-400{color:#68758c!important}
-main .text-zinc-500{color:#7d899f!important}
-main .text-zinc-600{color:#8c97aa!important}
-main .text-slate-950{color:#202a3d!important}
-main [class*="rounded-"][class*="border"]{
- border-color:rgba(128,143,176,.2);
-}
-main [class*="rounded-"][class*="bg-white"],
-main [class*="rounded-"][class*="bg-zinc-900"],
-main [class*="rounded-"][class*="bg-zinc-950"],
-main [class*="rounded-"][class*="bg-black"],
-main [class*="rounded-"][class*="bg-[#"]{
- background:linear-gradient(145deg,rgba(255,255,255,.88),rgba(255,255,255,.48))!important;
- border:1px solid rgba(255,255,255,.88);
- box-shadow:0 14px 42px rgba(52,68,105,.075),inset 0 1px 0 rgba(255,255,255,.95);
- backdrop-filter:blur(24px) saturate(150%);
- -webkit-backdrop-filter:blur(24px) saturate(150%);
-}
-main [class*="bg-white/"],main [class*="bg-black/"],main [class*="bg-zinc-"]{
- background-color:rgba(255,255,255,.52)!important;
-}
-main [class*="border-white/"]{border-color:rgba(126,142,176,.2)!important}
-main button[class*="rounded-"],main a[class*="rounded-"]{
- transition:transform .28s cubic-bezier(.22,1,.36,1),box-shadow .28s ease,background .28s ease,border-color .28s ease;
-}
-main button[class*="rounded-"]:hover,main a[class*="rounded-"]:hover{
- border-color:rgba(129,146,211,.38);box-shadow:0 10px 30px rgba(83,105,163,.12)
-}
+button{cursor:pointer}a{text-decoration:none}
+input,textarea,select{color:#f7f8ff;background:rgba(13,22,42,.6);border:1px solid rgba(255,255,255,.16);border-radius:14px}
+input::placeholder,textarea::placeholder{color:#a7b2ca}
+input:focus,textarea:focus,select:focus{outline:none;border-color:rgba(164,151,255,.8);box-shadow:0 0 0 4px rgba(139,124,255,.16)}
+main{min-height:calc(100vh - 4rem);background:transparent;color:#f7f8ff}
+main .text-zinc-500{color:#b0bad0!important}main .text-zinc-400{color:#c1c9db!important}main .text-zinc-300{color:#dce2f1!important}
+main [class*="rounded-"][class*="border"]{border-color:rgba(255,255,255,.18)}
+main [class*="rounded-"][class*="bg-white"],main [class*="rounded-"][class*="bg-zinc-900"],main [class*="rounded-"][class*="bg-zinc-950"],main [class*="rounded-"][class*="bg-black"],main [class*="rounded-"][class*="bg-[#"]{background:linear-gradient(145deg,rgba(255,255,255,.19),rgba(255,255,255,.065))!important;border:1px solid rgba(255,255,255,.22);box-shadow:0 18px 48px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.22);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%)}
+main [class*="bg-white/"],main [class*="bg-black/"],main [class*="bg-zinc-"]{background-color:rgba(255,255,255,.09)!important}
+main [class*="border-white/"]{border-color:rgba(255,255,255,.18)!important}
+main button[class*="rounded-"],main a[class*="rounded-"]{transition:transform .32s cubic-bezier(.22,1,.36,1),box-shadow .32s ease,background .32s ease,border-color .32s ease}
+main button[class*="rounded-"]:hover,main a[class*="rounded-"]:hover{border-color:rgba(192,183,255,.5);box-shadow:0 12px 34px rgba(81,89,190,.24)}
 main button[class*="rounded-"]:active,main a[class*="rounded-"]:active{transform:scale(.985)}
-main button.bg-white,main button.bg-cyan-200,main button[type="submit"]{
- color:#fff!important;
- background:linear-gradient(118deg,#8194dc 0%,#8b83cb 52%,#77b8c7 100%)!important;
- border:1px solid rgba(255,255,255,.9)!important;
- box-shadow:0 8px 24px rgba(113,130,199,.24),inset 0 1px 0 rgba(255,255,255,.35)!important;
-}
-main button.bg-white:hover,main button.bg-cyan-200:hover,main button[type="submit"]:hover{
- filter:brightness(1.055);box-shadow:0 12px 30px rgba(113,130,199,.3)!important;transform:translateY(-1px)
-}
+main button.bg-white,main button.bg-cyan-200,main button.bg-blue-600,main button[type="submit"]{color:#fff!important;background:linear-gradient(115deg,#718eff 0%,#9b75ed 56%,#69c3dc 100%)!important;border:1px solid rgba(255,255,255,.42)!important;box-shadow:0 8px 28px rgba(112,112,255,.34),inset 0 1px 0 rgba(255,255,255,.4)!important}
+main button.bg-white:hover,main button.bg-cyan-200:hover,main button.bg-blue-600:hover,main button[type="submit"]:hover{filter:brightness(1.08);box-shadow:0 14px 34px rgba(112,112,255,.4)!important;transform:translateY(-1px)}
 main button:disabled{cursor:not-allowed}
-main [role="alert"]{background:rgba(255,239,241,.82)!important;color:#a13c54!important;border-color:rgba(214,112,132,.25)!important;backdrop-filter:blur(18px)}
-header,aside{border-color:rgba(126,142,176,.18)!important}
-@media(prefers-reduced-motion:no-preference){
- main>div{animation:glass-enter .42s ease both}
- @keyframes glass-enter{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
-}
+main [role="alert"]{background:rgba(90,31,54,.78)!important;color:#ffdce6!important;border-color:rgba(255,153,180,.3)!important;backdrop-filter:blur(18px)}
+header,aside{border-color:rgba(255,255,255,.14)!important}
+@media(prefers-reduced-motion:no-preference){main>div{animation:glass-enter .5s cubic-bezier(.22,1,.36,1) both}@keyframes glass-enter{from{opacity:0;transform:translateY(10px);filter:blur(5px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 @media(max-width:767px){body{background-attachment:scroll}main{padding-bottom:max(1.5rem,env(safe-area-inset-bottom))}main [class*="rounded-"][class*="border"]{border-radius:20px}}
-
-main .bg-blue-600 {
- background:linear-gradient(120deg,#879be3,#8e84cf 58%,#78b7c8)!important;
- color:#fff!important;box-shadow:0 8px 22px rgba(117,137,209,.2)
-}
-main .bg-zinc-800 {
- background:rgba(255,255,255,.82)!important;color:#354158!important;
- border:1px solid rgba(126,142,176,.17)
-}
-main .text-red-200{color:#a13c54!important}
-main .text-emerald-300{color:#27866c!important}
-main .text-amber-300{color:#a36b22!important}
