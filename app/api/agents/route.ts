@@ -28,7 +28,7 @@ async function runModel(client:OpenAI,role:AgentRole,task:string,context:unknown
     instructions:role==="CEO"
       ? "You are the CEO and chief-of-staff orchestrator of AI Company OS. You lead a team of specialist agents. Delegate work to relevant specialists, reconcile their findings, set priorities, identify dependencies and risks, and return one decisive executive brief. Never claim external actions were taken. All real-world actions require human approval."
       : `You are the ${role} specialist reporting to the CEO of AI Company OS. Deliver concise, evidence-aware work. Be practical, state assumptions, never invent facts, and never claim external actions were taken.`,
-    input:`PRIVATE COMPANY WORKSPACE SNAPSHOT (JSON):\n${JSON.stringify(context)}\n\nTASK FROM THE USER:\n${task}\n\n${extra}`
+    input:`PRIVATE COMPANY WORKSPACE SNAPSHOT (JSON):\\n${JSON.stringify(context)}\\n\\nTASK FROM THE USER:\\n${task}\\n\\n${extra}`
   });
   return response.output_text||"No response was generated.";
 }
@@ -71,13 +71,13 @@ export async function POST(request:Request){
       if(selected.length===0){add("Research");add("Finance");add("Marketing");}
       const specialistResults=await Promise.all(selected.map(async specialist=>({role:specialist,result:await runModel(client,specialist,task,context,"Prepare findings for the CEO. Focus on evidence, options, risks, and recommended next actions.")})));
       delegated.push(...specialistResults);
-      const teamBrief=delegated.map(x=>`## ${x.role} Agent\n${x.result}`).join("\n\n");
-      result=await runModel(client,"CEO",task,context,`You have delegated this request to your specialist team. Their reports follow. Synthesize them into an executive decision brief with: Executive summary; decisions; prioritized action plan (owner, sequence, success metric); dependencies; risks; and items that require the user's explicit approval. Do not invent agent work beyond these reports.\n\nSPECIALIST REPORTS:\n${teamBrief}`);
+      const teamBrief=delegated.map(x=>`## ${x.role} Agent\\n${x.result}`).join("\\n\\n");
+      result=await runModel(client,"CEO",task,context,`You have delegated this request to your specialist team. Their reports follow. Synthesize them into an executive decision brief with: Executive summary; decisions; prioritized action plan (owner, sequence, success metric); dependencies; risks; and items that require the user's explicit approval. Do not invent agent work beyond these reports.\\n\\nSPECIALIST REPORTS:\\n${teamBrief}`);
     }else{
       result=await runModel(client,role,task,context);
     }
     const supabase=getSupabaseAdmin();
-    const saved=[];
+    const saved:unknown[]=[];
     for(const entry of [...delegated,{role,result}]){
       const {data,error}=await supabase.from("agent_runs").insert({user_id:userId,agent_role:entry.role.toLowerCase(),task:role==="CEO"?`[CEO delegation] ${task}`:task,result:entry.result,status:"completed"} as never).select("id,agent_role,task,result,status,created_at").single();
       if(error)throw error;
