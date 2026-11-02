@@ -29,7 +29,8 @@ export async function GET(
 
     if (error) throw error;
     return NextResponse.json({ items: data ?? [] });
-  } catch {
+  } catch (error) {
+    console.error("[workspace:GET] Supabase request failed", error);
     return NextResponse.json({ error: "Workspace database is not configured or unavailable." }, { status: 503 });
   }
 }
@@ -69,7 +70,8 @@ export async function POST(
 
     if (error) throw error;
     return NextResponse.json({ item: data }, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error("[workspace:POST] Supabase insert failed", error);
     return NextResponse.json({ error: "Could not save workspace item. Check Supabase setup." }, { status: 503 });
   }
 }
@@ -112,7 +114,8 @@ export async function PATCH(
     if (error) throw error;
     if (!data) return NextResponse.json({ error: "Item not found." }, { status: 404 });
     return NextResponse.json({ item: data });
-  } catch {
+  } catch (error) {
+    console.error("[workspace:PATCH] Supabase update failed", error);
     return NextResponse.json({ error: "Could not update workspace item." }, { status: 503 });
   }
 }
@@ -140,7 +143,8 @@ export async function DELETE(
 
     if (error) throw error;
     return NextResponse.json({ deleted: (count ?? 0) > 0 });
-  } catch {
+  } catch (error) {
+    console.error("[workspace:DELETE] Supabase delete failed", error);
     return NextResponse.json({ error: "Could not delete workspace item." }, { status: 503 });
   }
 }
