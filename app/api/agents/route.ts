@@ -35,10 +35,10 @@ async function loadCompanyContext(userId:string) {
   if(runsResult.error) throw runsResult.error;
   if(activityResult.error) throw activityResult.error;
   const workspace=((workspaceResult.data??[]) as ContextItem[]).map(item=>{
-    const record:Record<string,unknown>={section:item.section,title:item.title,description:item.description,status:item.status};
+    const record:Record<string,unknown>={section:item.section,title:redactMemoryText(item.title,160),description:typeof item.description==="string"?redactMemoryText(item.description,500):null,status:item.status};
     if(item.section==="crm"&&item.content&&typeof item.content==="object"){
       const deal=item.content as Record<string,unknown>;
-      record.deal={company:typeof deal.company==="string"?deal.company:undefined,stage:typeof deal.stage==="string"?deal.stage:undefined,dealValue:typeof deal.dealValue==="number"?deal.dealValue:undefined,nextFollowUp:typeof deal.nextFollowUp==="string"?deal.nextFollowUp:undefined};
+      record.deal={company:typeof deal.company==="string"?redactMemoryText(deal.company,120):undefined,stage:typeof deal.stage==="string"?redactMemoryText(deal.stage,80):undefined,dealValue:typeof deal.dealValue==="number"?deal.dealValue:undefined,nextFollowUp:typeof deal.nextFollowUp==="string"?redactMemoryText(deal.nextFollowUp,120):undefined};
     }
     return record;
   });
