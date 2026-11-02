@@ -36,7 +36,9 @@ export default function Hero() {
       <Testimonials />
       <div id="pricing"><Pricing /></div>
       <div id="solutions"><DashboardPreview /></div>
-      <footer id="contact" className="border-t border-white/10 bg-[#09090B] px-8 py-12 text-center text-sm text-zinc-500">Want a walkthrough? <a className="text-white underline" href="mailto:alialrawi2009@gmail.com?subject=AI%20Company%20OS%20demo">Contact us by email</a></footer>
+      <footer id="contact" className="border-t border-white/10 bg-[#09090B] px-8 py-12 text-center text-sm text-zinc-500">
+        Demo booking is coming soon. Create an account to explore AI Company OS.
+      </footer>
     </>
   );
 }
