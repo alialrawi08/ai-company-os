@@ -9,9 +9,9 @@ type ContextItem = { section:string; title:string; description:string|null; stat
 
 function redactMemoryText(value:string, maxLength:number) {
   return value
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi,"[email redacted]")
-    .replace(/(?:\\+?\\d[\\d ()-]{7,}\\d)/g,"[phone redacted]")
-    .replace(/((?:api[_-]?key|secret|password|token|service[_-]?role[_-]?key)\\s*[:=]\\s*["']?)[^\\s"' ,;]+/gi,"$1[REDACTED]")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,"[email redacted]")
+    .replace(/(?:\+?\d[\d ()-]{7,}\d)/g,"[phone redacted]")
+    .replace(/((?:api[_-]?key|secret|password|token|service[_-]?role[_-]?key)\s*[:=]\s*["']?)[^\s"' ,;]+/gi,"$1[REDACTED]")
     .slice(0,maxLength);
 }
 
