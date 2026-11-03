@@ -3,8 +3,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Company OS",
-  description: "AI-powered business operating system",
+  title: "AF QELVION | AI Operating System",
+  description: "AF QELVION — the AI operating system for business. Bring projects, customers, documents and AI teammates into one intelligent workspace.",
 };
 
 export default function RootLayout({
