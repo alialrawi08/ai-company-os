@@ -28,16 +28,13 @@ export async function POST(request: NextRequest) {
     }
 
     const messages = body.messages
-      .filter((item: unknown): item is { role: "user" | "assistant"; content: string } =>
-        Boolean(item) &&
-        typeof item === "object" &&
-        "role" in item &&
-        "content" in item &&
-        ((item as { role: unknown }).role === "user" || (item as { role: unknown }).role === "assistant") &&
-        typeof (item as { content: unknown }).content === "string",
-      )
-      .slice(-16)
-      .map((item) => ({ role: item.role, content: item.content.slice(0, 6000) }));
+      .filter((item: unknown): item is { role: "user" | "assistant"; content: string } => {
+        if (!item || typeof item !== "object") return false;
+        if (!("role" in item) || !("content" in item)) return false;
+        return (item.role === "user" || item.role === "assistant") && typeof item.content === "string";
+      })
+      .slice(-12)
+      .map((item) => ({ role: item.role, content: item.content.slice(0, 4000) }));
 
     if (messages.length === 0 || messages[messages.length - 1].role !== "user") {
       return NextResponse.json({ error: "Send a message to begin." }, { status: 400 });
