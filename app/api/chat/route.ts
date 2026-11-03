@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { auth } from "@clerk/nextjs/server";
+import { recordAIUsage } from "@/lib/ai-usage";
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -14,6 +15,17 @@ export async function POST(req: Request) {
     if (!message || message.length > 12000) return NextResponse.json({ error: "Message must be between 1 and 12000 characters" }, { status: 400 });
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 45_000, maxRetries: 1 });
     const response = await client.responses.create({ model: process.env.OPENAI_MODEL || "gpt-5-mini", input: message });
+    if (response.usage) {
+      await recordAIUsage({
+        userId,
+        agentRole: "assistant",
+        feature: "chat",
+        model: response.model,
+        promptTokens: response.usage.input_tokens,
+        completionTokens: response.usage.output_tokens,
+        totalTokens: response.usage.total_tokens,
+      });
+    }
     return NextResponse.json({ reply: response.output_text });
   } catch (error) {
     console.error("AI chat failed", error);
