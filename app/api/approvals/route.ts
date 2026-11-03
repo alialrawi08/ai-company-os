@@ -45,7 +45,8 @@ export async function POST(request: NextRequest) {
       status: "pending_approval",
     } as never).select("id,title,description,content,status,created_at,updated_at").single();
     if (error) throw error;
-    await getSupabaseAdmin().from("activity_logs").insert({ user_id: userId, event_type: "approval.requested", description: "An action is waiting for human approval", metadata: { approval_id: data.id, action_type: actionType } } as never);
+    const approvalId = (data as unknown as { id: string }).id;
+    await getSupabaseAdmin().from("activity_logs").insert({ user_id: userId, event_type: "approval.requested", description: "An action is waiting for human approval", metadata: { approval_id: approvalId, action_type: actionType } } as never);
     return NextResponse.json({ approval: data }, { status: 201 });
   } catch (error) {
     console.error("[approvals:POST]", error);
