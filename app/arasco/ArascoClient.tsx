@@ -4,9 +4,9 @@ import "./arasco.css";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import {
-  Activity, ArrowUp, AudioLines, Bot, BrainCircuit, Check, ChevronDown,
-  Command, Cpu, Globe2, LayoutDashboard, Menu, Mic, MicOff, Monitor,
-  Plus, Radio, Settings2, ShieldCheck, Sparkles, Volume2, VolumeX, X,
+  Activity, ArrowUp, AudioLines, Bot, BrainCircuit, Cpu, Globe2,
+  LayoutDashboard, Menu, Mic, MicOff, Plus, Radio, Settings2,
+  ShieldCheck, Sparkles, Volume2, X,
 } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -58,7 +58,8 @@ export default function ArascoClient() {
     const w = window as SpeechWindow;
     setVoiceSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
     fetch("/api/arasco", { method: "GET" })
-      .then((r) => setApiReady(r.ok))
+      .then((r) => r.json())
+      .then((data) => setApiReady(Boolean(data.configured)))
       .catch(() => setApiReady(false));
   }, []);
 
@@ -215,7 +216,7 @@ export default function ArascoClient() {
           </section>
 
           <section className="metrics-grid" id="systems">
-            <article className="metric-card"><div className="metric-top"><span>INTELLIGENCE</span><BrainCircuit size={17} /></div><div className="metric-value">ONLINE</div><div className="metric-foot"><span className="tiny-green" /> Conversation engine ready</div></article>
+            <article className="metric-card"><div className="metric-top"><span>INTELLIGENCE</span><BrainCircuit size={17} /></div><div className="metric-value">{apiReady === null ? "CHECKING" : apiReady ? "CONNECTED" : "SETUP NEEDED"}</div><div className="metric-foot"><span className={apiReady ? "tiny-green" : ""} /> {apiReady ? "AI engine connected securely" : "Add your server API key to activate chat"}</div></article>
             <article className="metric-card"><div className="metric-top"><span>VOICE INTERFACE</span><Radio size={17} /></div><div className="metric-value">{voiceSupported ? "AVAILABLE" : "LIMITED"}</div><div className="metric-foot">{voiceSupported ? "Browser speech input detected" : "Text input always available"}</div></article>
             <article className="metric-card"><div className="metric-top"><span>SECURITY</span><ShieldCheck size={17} /></div><div className="metric-value">CONTROLLED</div><div className="metric-foot">No device actions without approval</div></article>
           </section>
