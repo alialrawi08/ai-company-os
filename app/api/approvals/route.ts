@@ -63,9 +63,10 @@ export async function PATCH(request: NextRequest) {
   }
   try {
     const supabase = getSupabaseAdmin();
-    const { data: existing, error: readError } = await supabase.from("workspace_items").select("id,status,content,title")
+    const { data: existingRaw, error: readError } = await supabase.from("workspace_items").select("id,status,content,title")
       .eq("id", body.id).eq("user_id", userId).eq("section", "agents").like("title", "Approval: %").maybeSingle();
     if (readError) throw readError;
+    const existing = existingRaw as unknown as { id: string; status: string; content: unknown; title: string } | null;
     if (!existing) return NextResponse.json({ error: "Approval request not found." }, { status: 404 });
     if (existing.status !== "pending_approval") return NextResponse.json({ error: "This request has already been decided." }, { status: 409 });
     const content = existing.content && typeof existing.content === "object" && !Array.isArray(existing.content) ? existing.content as Record<string, unknown> : {};
