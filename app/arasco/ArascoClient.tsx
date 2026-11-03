@@ -85,7 +85,7 @@ export default function ArascoClient() {
       return;
     }
     const instance = new SpeechRecognitionCtor();
-    instance.lang = "en-US";
+    instance.lang = navigator.language || "ar-IQ";
     instance.interimResults = true;
     instance.continuous = false;
     instance.onresult = (event) => {
@@ -113,7 +113,7 @@ export default function ArascoClient() {
     }
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-US";
+    utterance.lang = /[\\u0600-\\u06FF]/.test(text) ? "ar-IQ" : /[åäöÅÄÖ]/.test(text) ? "sv-SE" : "en-US";
     utterance.rate = 1;
     utterance.onstart = () => setSpeaking(true);
     utterance.onend = () => setSpeaking(false);
