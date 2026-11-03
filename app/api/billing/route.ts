@@ -23,7 +23,8 @@ export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const row = await billingRecord(userId);
+    const rowRaw = await billingRecord(userId);
+    const row = rowRaw as { id: string; content: unknown; status: string } | null;
     const c = row?.content && typeof row.content === "object" ? row.content as Record<string, unknown> : {};
     return NextResponse.json({ subscription: {
       status: row?.status ?? "free",
@@ -47,7 +48,8 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const action = body && typeof body === "object" ? body.action : null;
   try {
-    const row = await billingRecord(userId);
+    const rowRaw = await billingRecord(userId);
+    const row = rowRaw as { id: string; content: unknown; status: string } | null;
     const content = row?.content && typeof row.content === "object" ? row.content as Record<string, unknown> : {};
     let endpoint: string;
     const params = new URLSearchParams();
