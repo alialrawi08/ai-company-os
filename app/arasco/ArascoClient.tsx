@@ -1,5 +1,7 @@
 "use client";
 
+import "./arasco.css";
+
 import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   Activity, ArrowUp, AudioLines, Bot, BrainCircuit, Check, ChevronDown,
