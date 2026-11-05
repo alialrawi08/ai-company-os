@@ -12,8 +12,9 @@ function validSignature(raw:string,header:string,secret:string){
 async function save(userId:string,customerId:string|null,subscriptionId:string|null,status:string,plan:string|null,periodEnd:number|null,cancelAtPeriodEnd:boolean){
  const db=getSupabaseAdmin();const content={customerId,subscriptionId,plan,currentPeriodEnd:periodEnd?new Date(periodEnd*1000).toISOString():null,cancelAtPeriodEnd};
  const {data,error}=await db.from("workspace_items").select("id").eq("user_id",userId).eq("section","settings").eq("title","Billing subscription").maybeSingle();if(error)throw error;
+ const existingId=(data as {id:string}|null)?.id;
  const values={description:"Stripe subscription state synced by verified webhook.",content,status,updated_at:new Date().toISOString()};
- const result=data?await db.from("workspace_items").update(values as never).eq("id",data.id).eq("user_id",userId):await db.from("workspace_items").insert({user_id:userId,section:"settings",title:"Billing subscription",...values} as never);
+ const result=existingId?await db.from("workspace_items").update(values as never).eq("id",existingId).eq("user_id",userId):await db.from("workspace_items").insert({user_id:userId,section:"settings",title:"Billing subscription",...values} as never);
  if(result.error)throw result.error;
 }
 export async function POST(request:NextRequest){
