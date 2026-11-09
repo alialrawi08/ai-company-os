@@ -1,20 +1,17 @@
-import { auth } from "@clerk/nextjs/server";
+import { getTenantContext } from "@/lib/tenancy";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 const allowedSections = new Set(["projects", "crm", "documents", "agents", "settings"]);
 
-async function getOwner() {
-  const { userId } = await auth();
-  return userId;
-}
 
 export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ section: string }> },
 ) {
-  const userId = await getOwner();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const tenant = await getTenantContext().catch(() => null);
+  const userId = tenant?.userId;
+  if (!tenant || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { section } = await context.params;
   if (!allowedSections.has(section)) return NextResponse.json({ error: "Invalid section" }, { status: 400 });
@@ -23,7 +20,7 @@ export async function GET(
     const { data, error } = await getSupabaseAdmin()
       .from("workspace_items")
       .select("id, section, title, description, content, status, created_at, updated_at")
-      .eq("user_id", userId)
+      .eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId)
       .eq("section", section)
       .order("updated_at", { ascending: false });
 
@@ -59,6 +56,7 @@ export async function POST(
       .from("workspace_items")
       .insert({
         user_id: userId,
+        clerk_org_id: tenant.organizationId,
         section,
         title: body.title.trim(),
         description: typeof body.description === "string" ? body.description.slice(0, 2000) : "",
@@ -106,7 +104,7 @@ export async function PATCH(
       .from("workspace_items")
       .update(updates as never)
       .eq("id", body.id)
-      .eq("user_id", userId)
+      .eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId)
       .eq("section", section)
       .select("id, section, title, description, content, status, created_at, updated_at")
       .maybeSingle();
@@ -138,7 +136,7 @@ export async function DELETE(
       .from("workspace_items")
       .delete({ count: "exact" })
       .eq("id", id)
-      .eq("user_id", userId)
+      .eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId)
       .eq("section", section);
 
     if (error) throw error;
