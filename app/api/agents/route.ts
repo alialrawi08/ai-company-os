@@ -61,11 +61,12 @@ async function loadCompanyContext(userId:string) {
     summary:redactMemoryText(typeof item.description==="string"?item.description:"",240),
     date:item.created_at,
   }));
+  const approvalRows=(approvalResult.data??[]) as Array<{title:string;description:string|null;status:string;created_at:string}>;
   return {
     workspace,
     approvals:{
-      pending:(approvalResult.data??[]).filter(item=>item.status==="pending_approval").map(item=>({title:redactMemoryText(item.title,160),description:redactMemoryText(item.description??"",500),requestedAt:item.created_at})),
-      recentDecisions:(approvalResult.data??[]).filter(item=>item.status==="approved"||item.status==="rejected").slice(0,8).map(item=>({title:redactMemoryText(item.title,160),status:item.status})),
+      pending:approvalRows.filter(item=>item.status==="pending_approval").map(item=>({title:redactMemoryText(item.title,160),description:redactMemoryText(item.description??"",500),requestedAt:item.created_at})),
+      recentDecisions:approvalRows.filter(item=>item.status==="approved"||item.status==="rejected").slice(0,8).map(item=>({title:redactMemoryText(item.title,160),status:item.status})),
     },
     companyMemory:{
       recentAgentWork,
