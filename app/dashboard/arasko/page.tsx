@@ -65,14 +65,14 @@ export default function AraskoPage() {
     const next = [...messages, { role: "user" as const, content: clean }];
     setMessages(next); setInput(""); setBusy(true); setVoiceError("");
     try {
-      const response = await fetch("/api/arasko", {
+      const response = await fetch(delegate ? "/api/agents" : "/api/arasko", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next.slice(-12), language }),
+        body: JSON.stringify(delegate ? { role: "CEO", task: clean, language } : { messages: next.slice(-12), language }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Arasko could not respond.");
-      const answer = delegate ? String(data.result || "ما وصلنا تقرير من الفريق.") : String(data.reply || "ما عندي جواب حالياً.");
-      setMessages(current => [...current, { role: "assistant", content: answer }]);
+      const answer = delegate ? String(data.result || "No team report was returned.") : String(data.reply || "No response was generated.");
+      setMessages(current => [...current, { role: "assistant", content: delegate ? `${t.delegated}\\n${(data.delegated||[]).join(" · ")}\\n\\n${answer}` : answer }]);
       speak(answer);
     } catch (error) {
       setVoiceError(error instanceof Error ? error.message : "Connection failed.");
