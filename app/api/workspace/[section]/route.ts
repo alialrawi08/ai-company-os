@@ -37,8 +37,9 @@ export async function POST(
   request: NextRequest,
   context: { params: Promise<{ section: string }> },
 ) {
-  const userId = await getOwner();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const tenant = await getTenantContext().catch(() => null);
+  const userId = tenant?.userId;
+  if (!tenant || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { section } = await context.params;
   if (!allowedSections.has(section)) return NextResponse.json({ error: "Invalid section" }, { status: 400 });
@@ -106,6 +107,7 @@ export async function PATCH(
       .update(updates as never)
       .eq("id", body.id)
       .eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId)
+      .filter("clerk_org_id", tenant.organizationId ? "eq" : "is", tenant.organizationId ?? "null")
       .eq("section", section)
       .select("id, section, title, description, content, status, created_at, updated_at")
       .maybeSingle();
