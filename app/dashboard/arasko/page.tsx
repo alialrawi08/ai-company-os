@@ -51,7 +51,7 @@ export default function AraskoPage() {
     if (!voiceEnabled || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ar";
+    utterance.lang = language === "sv" ? "sv-SE" : language === "ar" ? "ar-IQ" : "en-US";
     utterance.rate = 1;
     utterance.onstart = () => setSpeaking(true);
     utterance.onend = () => setSpeaking(false);
@@ -67,7 +67,7 @@ export default function AraskoPage() {
     try {
       const response = await fetch("/api/arasko", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next.slice(-12) }),
+        body: JSON.stringify({ messages: next.slice(-12), language }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Arasko could not respond.");
@@ -86,7 +86,7 @@ export default function AraskoPage() {
     window.speechSynthesis?.cancel();
     const instance = new Recognition();
     recognition.current = instance;
-    instance.lang = "ar-IQ";
+    instance.lang = language === "sv" ? "sv-SE" : language === "ar" ? "ar-IQ" : "en-US";
     instance.continuous = false;
     instance.interimResults = false;
     instance.onresult = event => {
