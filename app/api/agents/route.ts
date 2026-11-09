@@ -18,23 +18,28 @@ function redactMemoryText(value:string, maxLength:number) {
 
 async function loadCompanyContext(userId:string) {
   const supabase=getSupabaseAdmin();
-  const [workspaceResult,runsResult,activityResult]=await Promise.all([
+  const [workspaceResult,runsResult,activityResult,approvalResult]=await Promise.all([
     supabase.from("workspace_items")
       .select("section,title,description,status,content,updated_at")
-      .eq("user_id",userId).in("section",["projects","crm","documents"])
-      .order("updated_at",{ascending:false}).limit(30),
+      .eq("user_id",userId).in("section",["projects","crm","documents","settings"])
+      .order("updated_at",{ascending:false}).limit(40),
     supabase.from("agent_runs")
       .select("agent_role,task,result,created_at")
       .eq("user_id",userId).eq("status","completed")
-      .order("created_at",{ascending:false}).limit(6),
+      .order("created_at",{ascending:false}).limit(8),
     supabase.from("activity_logs")
       .select("event_type,description,created_at")
       .eq("user_id",userId)
-      .order("created_at",{ascending:false}).limit(8),
+      .order("created_at",{ascending:false}).limit(12),
+    supabase.from("workspace_items")
+      .select("title,description,status,created_at")
+      .eq("user_id",userId).eq("section","agents").like("title","Approval: %")
+      .order("created_at",{ascending:false}).limit(20),
   ]);
   if(workspaceResult.error) throw workspaceResult.error;
   if(runsResult.error) throw runsResult.error;
   if(activityResult.error) throw activityResult.error;
+  if(approvalResult.error) throw approvalResult.error;
   const workspace=((workspaceResult.data??[]) as ContextItem[]).map(item=>{
     const record:Record<string,unknown>={section:item.section,title:redactMemoryText(item.title,160),description:typeof item.description==="string"?redactMemoryText(item.description,500):null,status:item.status};
     if(item.section==="crm"&&item.content&&typeof item.content==="object"){
@@ -58,6 +63,10 @@ async function loadCompanyContext(userId:string) {
   }));
   return {
     workspace,
+    approvals:{
+      pending:(approvalResult.data??[]).filter(item=>item.status==="pending_approval").map(item=>({title:redactMemoryText(item.title,160),description:redactMemoryText(item.description??"",500),requestedAt:item.created_at})),
+      recentDecisions:(approvalResult.data??[]).filter(item=>item.status==="approved"||item.status==="rejected").slice(0,8).map(item=>({title:redactMemoryText(item.title,160),status:item.status})),
+    },
     companyMemory:{
       recentAgentWork,
       recentActivity,
