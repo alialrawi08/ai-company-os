@@ -107,7 +107,7 @@ async function loadRepositoryContext() {
   };
 }
 
-async function runModel(client:OpenAI,role:AgentRole,task:string,context:unknown,userId:string,extra="") {
+async function runModel(client:OpenAI,role:AgentRole,task:string,context:unknown,userId:string,extra="",language:"en"|"sv"|"ar"="en") {\n  const languageName=language==="ar"?"Arabic":language==="sv"?"Swedish":"English";
   const response=await client.responses.create({
     model:process.env.OPENAI_MODEL||"gpt-5-mini",max_output_tokens:role==="CEO"?3600:2200,
     instructions:role==="CEO"
@@ -148,7 +148,7 @@ export async function POST(request:Request){
     if(!body||typeof body!=="object"||Array.isArray(body))return NextResponse.json({error:"A JSON object is required."},{status:400});
     const payload=body as Record<string,unknown>;
     const role=payload.role as AgentRole;
-    const task=typeof payload.task==="string"?payload.task.trim():"";
+    const task=typeof payload.task==="string"?payload.task.trim():"";\n    const language=payload.language==="ar"||payload.language==="sv"?payload.language:"en";
     if(!roles.includes(role))return NextResponse.json({error:"Unknown agent role"},{status:400});
     if(!task||task.length>12000)return NextResponse.json({error:"Task must be between 1 and 12000 characters"},{status:400});
     const context=await loadCompanyContext(userId);
@@ -167,13 +167,13 @@ export async function POST(request:Request){
       if(selected.length===0){add("Research");add("Finance");add("Marketing");}
       const repositoryContext=await loadRepositoryContext();
       const ceoContext={...context,repository:repositoryContext};
-      const specialistResults=await Promise.all(selected.map(async specialist=>{const specialistContext=specialist==="Developer"?ceoContext:context;return {role:specialist,result:await runModel(client,specialist,task,specialistContext,userId,"Prepare findings for the CEO. Focus on evidence, options, risks, and recommended next actions.")};}));
+      const specialistResults=await Promise.all(selected.map(async specialist=>{const specialistContext=specialist==="Developer"?ceoContext:context;return {role:specialist,result:await runModel(client,specialist,task,specialistContext,userId,"Prepare findings for the CEO. Focus on evidence, options, risks, and recommended next actions.",language)};}));
       delegated.push(...specialistResults);
       const teamBrief=delegated.map(x=>`## ${x.role} Agent\\n${x.result}`).join("\\n\\n");
-      result=await runModel(client,"CEO",task,ceoContext,userId,`You have delegated this request to your specialist team. Their reports follow. Synthesize them into an executive decision brief with: Executive summary; decisions; prioritized action plan (owner, sequence, success metric); dependencies; risks; and items that require the user's explicit approval. Do not invent agent work beyond these reports.\\n\\nSPECIALIST REPORTS:\\n${teamBrief}`);
+      result=await runModel(client,"CEO",task,ceoContext,userId,`You have delegated this request to your specialist team. Their reports follow. Synthesize them into an executive decision brief with: Executive summary; decisions; prioritized action plan (owner, sequence, success metric); dependencies; risks; and items that require the user's explicit approval. Do not invent agent work beyond these reports.\\n\\nSPECIALIST REPORTS:\\n${teamBrief}`,language);
     }else{
       const agentContext=role==="Developer"?{workspace:context,repository:await loadRepositoryContext()}:context;
-      result=await runModel(client,role,task,agentContext,userId);
+      result=await runModel(client,role,task,agentContext,userId,"",language);
     }
     const supabase=getSupabaseAdmin();
     const saved:unknown[]=[];
