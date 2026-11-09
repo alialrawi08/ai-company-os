@@ -24,7 +24,7 @@ export async function getTenantContext(): Promise<TenantContext | null> {
       name: organizationName,
       created_by_user_id: session.userId,
       updated_at: new Date().toISOString(),
-    }, { onConflict: "clerk_org_id", ignoreDuplicates: true });
+    } as never, { onConflict: "clerk_org_id", ignoreDuplicates: true });
     if (organizationError) throw organizationError;
 
     const { error: membershipError } = await db.from("organization_memberships").upsert({
@@ -32,7 +32,7 @@ export async function getTenantContext(): Promise<TenantContext | null> {
       clerk_user_id: session.userId,
       role,
       updated_at: new Date().toISOString(),
-    }, { onConflict: "clerk_org_id,clerk_user_id" });
+    } as never, { onConflict: "clerk_org_id,clerk_user_id" });
     if (membershipError) throw membershipError;
   }
 
