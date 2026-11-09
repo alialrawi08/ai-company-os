@@ -30,15 +30,39 @@ export async function POST(request: Request) {
     }
 
     const db = getSupabaseAdmin();
-    const [workspace, runs, activity] = await Promise.all([
-      db.from("workspace_items").select("section,title,description,status,updated_at").eq("user_id", userId).order("updated_at", { ascending: false }).limit(30),
-      db.from("agent_runs").select("agent_role,task,status,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(12),
-      db.from("activity_logs").select("event_type,description,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(12),
+    const [workspace, runs, activity, approvals] = await Promise.all([
+      db.from("workspace_items").select("section,title,description,status,content,updated_at").eq("user_id", userId).in("section", ["projects", "crm", "documents", "settings"]).order("updated_at", { ascending: false }).limit(40),
+      db.from("agent_runs").select("agent_role,task,status,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(15),
+      db.from("activity_logs").select("event_type,description,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(15),
+      db.from("workspace_items").select("title,description,status,content,created_at").eq("user_id", userId).eq("section", "agents").like("title", "Approval: %").order("created_at", { ascending: false }).limit(20),
     ]);
+    const safeWorkspace = (workspace.data ?? []).map((item) => {
+      const content = item.content && typeof item.content === "object" && !Array.isArray(item.content) ? item.content as Record<string, unknown> : {};
+      const safeContent: Record<string, unknown> = {};
+      if (item.section === "crm") {
+        for (const key of ["company", "stage", "dealValue", "nextFollowUp", "source"]) {
+          const value = content[key];
+          if (typeof value === "string" || typeof value === "number") safeContent[key] = typeof value === "string" ? value.slice(0, 180) : value;
+        }
+      }
+      if (item.section === "projects") {
+        for (const key of ["priority", "deadline", "owner", "progress"]) {
+          const value = content[key];
+          if (typeof value === "string" || typeof value === "number") safeContent[key] = typeof value === "string" ? value.slice(0, 180) : value;
+        }
+      }
+      return { section: item.section, title: item.title, description: item.description, status: item.status, details: safeContent, updatedAt: item.updated_at };
+    });
+    const approvalRows = approvals.data ?? [];
     const snapshot = {
-      workspace: workspace.error ? [] : workspace.data ?? [],
+      workspace: safeWorkspace,
+      approvals: {
+        pending: approvalRows.filter((item) => item.status === "pending_approval").map((item) => ({ title: item.title, description: item.description, requestedAt: item.created_at })),
+        recentlyDecided: approvalRows.filter((item) => item.status === "approved" || item.status === "rejected").slice(0, 8).map((item) => ({ title: item.title, status: item.status })),
+      },
       recentAgentRuns: runs.error ? [] : runs.data ?? [],
       recentActivity: activity.error ? [] : activity.data ?? [],
+      dataLimitations: "This is a limited snapshot of the authenticated user's workspace, not a complete repository audit or permanent memory. Empty sections mean no records were returned.",
     };
 
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 45_000, maxRetries: 1 });
