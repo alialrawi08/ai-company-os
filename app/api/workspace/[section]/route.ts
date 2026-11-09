@@ -21,6 +21,7 @@ export async function GET(
       .from("workspace_items")
       .select("id, section, title, description, content, status, created_at, updated_at")
       .eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId)
+      .filter("clerk_org_id", tenant.organizationId ? "eq" : "is", tenant.organizationId ?? "null")
       .eq("section", section)
       .order("updated_at", { ascending: false });
 
