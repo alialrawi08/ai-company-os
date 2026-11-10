@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { getTenantContext } from "@/lib/tenancy";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 function config() {
@@ -11,49 +11,53 @@ function config() {
   };
 }
 
-async function billingRecord(userId: string) {
-  const db = getSupabaseAdmin();
-  const { data, error } = await db.from("workspace_items").select("id,content,status")
-    .eq("user_id", userId).eq("section", "settings").eq("title", "Billing subscription").maybeSingle();
-  if (error) throw error;
-  return data;
-}
-
 export async function GET() {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const tenant = await getTenantContext().catch(() => null);
+  if (!tenant) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!tenant.organizationId) {
+    return NextResponse.json({ subscription: { status: "free", plan: null, currentPeriodEnd: null, cancelAtPeriodEnd: false, canManage: false }, needsOrganization: true });
+  }
   try {
-    const rowRaw = await billingRecord(userId);
-    const row = rowRaw as { id: string; content: unknown; status: string } | null;
-    const c = row?.content && typeof row.content === "object" ? row.content as Record<string, unknown> : {};
+    const { data, error } = await getSupabaseAdmin()
+      .from("organization_subscriptions")
+      .select("plan_key,status,current_period_end,cancel_at_period_end,stripe_customer_id")
+      .eq("clerk_org_id", tenant.organizationId)
+      .maybeSingle();
+    if (error) throw error;
     return NextResponse.json({ subscription: {
-      status: row?.status ?? "free",
-      plan: c.plan ?? null,
-      currentPeriodEnd: c.currentPeriodEnd ?? null,
-      cancelAtPeriodEnd: c.cancelAtPeriodEnd ?? false,
-      canManage: typeof c.customerId === "string",
+      status: data?.status ?? "free",
+      plan: data?.plan_key ?? null,
+      currentPeriodEnd: data?.current_period_end ?? null,
+      cancelAtPeriodEnd: data?.cancel_at_period_end ?? false,
+      canManage: tenant.role === "admin" && typeof data?.stripe_customer_id === "string",
     }});
   } catch (error) {
     console.error("[billing:GET]", error);
-    return NextResponse.json({ error: "Could not load billing status." }, { status: 503 });
+    return NextResponse.json({ error: "Could not load company billing status." }, { status: 503 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const tenant = await getTenantContext().catch(() => null);
+  if (!tenant) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!tenant.organizationId) return NextResponse.json({ error: "Create or select a company before starting a company subscription." }, { status: 409 });
+  if (tenant.role !== "admin") return NextResponse.json({ error: "Only company admins can manage billing." }, { status: 403 });
+
   const { secret, proPrice, businessPrice, appUrl } = config();
   if (!secret || !appUrl) return NextResponse.json({ error: "Billing is not configured. Add Stripe and app URL environment variables." }, { status: 503 });
-
   const body = await request.json().catch(() => null);
   const action = body && typeof body === "object" ? body.action : null;
-  try {
-    const rowRaw = await billingRecord(userId);
-    const row = rowRaw as { id: string; content: unknown; status: string } | null;
-    const content = row?.content && typeof row.content === "object" ? row.content as Record<string, unknown> : {};
-    let endpoint: string;
-    const params = new URLSearchParams();
 
+  try {
+    const { data: subscription, error } = await getSupabaseAdmin()
+      .from("organization_subscriptions")
+      .select("stripe_customer_id")
+      .eq("clerk_org_id", tenant.organizationId)
+      .maybeSingle();
+    if (error) throw error;
+
+    const params = new URLSearchParams();
+    let endpoint: string;
     if (action === "checkout") {
       const plan = body?.plan;
       const price = plan === "pro" ? proPrice : plan === "business" ? businessPrice : null;
@@ -61,19 +65,20 @@ export async function POST(request: NextRequest) {
       params.set("mode", "subscription");
       params.set("line_items[0][price]", price);
       params.set("line_items[0][quantity]", "1");
-      params.set("client_reference_id", userId);
-      params.set("metadata[user_id]", userId);
+      params.set("client_reference_id", tenant.organizationId);
+      params.set("metadata[clerk_org_id]", tenant.organizationId);
       params.set("metadata[plan]", plan);
-      params.set("subscription_data[metadata][user_id]", userId);
+      params.set("metadata[initiated_by_user_id]", tenant.userId);
+      params.set("subscription_data[metadata][clerk_org_id]", tenant.organizationId);
       params.set("subscription_data[metadata][plan]", plan);
+      if (typeof subscription?.stripe_customer_id === "string") params.set("customer", subscription.stripe_customer_id);
+      else params.set("customer_creation", "always");
       params.set("success_url", appUrl + "/dashboard/billing?success=1");
       params.set("cancel_url", appUrl + "/dashboard/billing?canceled=1");
-      if (typeof content.customerId === "string") params.set("customer", content.customerId);
-      else params.set("customer_creation", "always");
       endpoint = "https://api.stripe.com/v1/checkout/sessions";
     } else if (action === "portal") {
-      if (typeof content.customerId !== "string") return NextResponse.json({ error: "No Stripe customer is linked yet." }, { status: 409 });
-      params.set("customer", content.customerId);
+      if (typeof subscription?.stripe_customer_id !== "string") return NextResponse.json({ error: "No Stripe customer is linked to this company yet." }, { status: 409 });
+      params.set("customer", subscription.stripe_customer_id);
       params.set("return_url", appUrl + "/dashboard/billing");
       endpoint = "https://api.stripe.com/v1/billing_portal/sessions";
     } else {
@@ -87,13 +92,13 @@ export async function POST(request: NextRequest) {
       signal: AbortSignal.timeout(15000),
     });
     const data = await response.json();
-    if (!response.ok) {
+    if (!response.ok || typeof data.url !== "string") {
       console.error("[billing:stripe]", data?.error?.type);
       return NextResponse.json({ error: "Stripe could not create the billing session." }, { status: 502 });
     }
     return NextResponse.json({ url: data.url });
   } catch (error) {
     console.error("[billing:POST]", error);
-    return NextResponse.json({ error: "Could not start billing." }, { status: 503 });
+    return NextResponse.json({ error: "Could not start company billing." }, { status: 503 });
   }
 }
