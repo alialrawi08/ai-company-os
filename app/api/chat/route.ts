@@ -18,6 +18,7 @@ export async function POST(req: Request) {
     if (response.usage) {
       await recordAIUsage({
         userId,
+        clerkOrgId: tenant.organizationId,
         agentRole: "assistant",
         feature: "chat",
         model: response.model,
