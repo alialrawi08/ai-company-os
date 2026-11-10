@@ -33,9 +33,9 @@ export async function POST(request: Request) {
     const db = getSupabaseAdmin();
     const [workspace, runs, activity, approvals] = await Promise.all([
       db.from("workspace_items").select("section,title,description,status,content,updated_at").eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId).filter("clerk_org_id", tenant.organizationId ? "eq" : "is", tenant.organizationId ?? "null").in("section", ["projects", "crm", "documents", "settings"]).order("updated_at", { ascending: false }).limit(40),
-      db.from("agent_runs").select("agent_role,task,status,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(15),
-      db.from("activity_logs").select("event_type,description,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(15),
-      db.from("workspace_items").select("title,description,status,content,created_at").eq("user_id", userId).eq("section", "agents").like("title", "Approval: %").order("created_at", { ascending: false }).limit(20),
+      db.from("agent_runs").select("agent_role,task,status,created_at").eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId).filter("clerk_org_id", tenant.organizationId ? "eq" : "is", tenant.organizationId ?? "null").order("created_at", { ascending: false }).limit(15),
+      db.from("activity_logs").select("event_type,description,created_at").eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId).filter("clerk_org_id", tenant.organizationId ? "eq" : "is", tenant.organizationId ?? "null").order("created_at", { ascending: false }).limit(15),
+      db.from("workspace_items").select("title,description,status,content,created_at").eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId).filter("clerk_org_id", tenant.organizationId ? "eq" : "is", tenant.organizationId ?? "null").eq("section", "agents").like("title", "Approval: %").order("created_at", { ascending: false }).limit(20),
     ]);
     const workspaceRows=(workspace.data??[]) as Array<{section:string;title:string;description:string|null;status:string;content:unknown;updated_at:string}>;
     const safeWorkspace = workspaceRows.map((item) => {
