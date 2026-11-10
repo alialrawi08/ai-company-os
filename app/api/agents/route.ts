@@ -127,6 +127,7 @@ async function runModel(client:OpenAI,role:AgentRole,task:string,context:unknown
   if (response.usage) {
     await recordAIUsage({
       userId,
+      clerkOrgId: organizationId,
       agentRole: role,
       feature: "agent_orchestration",
       model: response.model,
