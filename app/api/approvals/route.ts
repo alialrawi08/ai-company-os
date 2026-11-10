@@ -56,6 +56,7 @@ export async function PATCH(request: NextRequest) {
   const tenant = await getTenantContext().catch(() => null);
   const userId = tenant?.userId;
   if (!tenant || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (tenant.organizationId && tenant.role !== "admin") return NextResponse.json({ error: "Only company admins can approve or reject actions." }, { status: 403 });
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body) || typeof body.id !== "string" || !body.id || !["approved", "rejected"].includes(body.decision)) {
     return NextResponse.json({ error: "A valid request id and approved/rejected decision are required." }, { status: 400 });
