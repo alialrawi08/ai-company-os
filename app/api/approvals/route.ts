@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getTenantContext } from "@/lib/tenancy";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -15,7 +15,7 @@ export async function GET() {
   try {
     const { data, error } = await getSupabaseAdmin().from("workspace_items")
       .select("id,title,description,content,status,created_at,updated_at")
-      .eq("user_id", userId).eq("section", "agents")
+      .eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId).filter("clerk_org_id", tenant.organizationId ? "eq" : "is", tenant.organizationId ?? "null").eq("section", "agents")
       .like("title", "Approval: %")
       .order("created_at", { ascending: false }).limit(100);
     if (error) throw error;
@@ -39,14 +39,14 @@ export async function POST(request: NextRequest) {
   }
   try {
     const { data, error } = await getSupabaseAdmin().from("workspace_items").insert({
-      user_id: userId, section: "agents", title: `Approval: ${title}`,
+      user_id: userId, clerk_org_id: tenant.organizationId, section: "agents", title: `Approval: ${title}`,
       description: proposal.slice(0, 2000),
       content: { kind: "approval_request", actionType, proposal, decision: null },
       status: "pending_approval",
     } as never).select("id,title,description,content,status,created_at,updated_at").single();
     if (error) throw error;
     const approvalId = (data as unknown as { id: string }).id;
-    await getSupabaseAdmin().from("activity_logs").insert({ user_id: userId, event_type: "approval.requested", description: "An action is waiting for human approval", metadata: { approval_id: approvalId, action_type: actionType } } as never);
+    await getSupabaseAdmin().from("activity_logs").insert({ user_id: userId, clerk_org_id: tenant.organizationId, event_type: "approval.requested", description: "An action is waiting for human approval", metadata: { approval_id: approvalId, action_type: actionType } } as never);
     return NextResponse.json({ approval: data }, { status: 201 });
   } catch (error) {
     console.error("[approvals:POST]", error);
