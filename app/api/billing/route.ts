@@ -18,12 +18,13 @@ export async function GET() {
     return NextResponse.json({ subscription: { status: "free", plan: null, currentPeriodEnd: null, cancelAtPeriodEnd: false, canManage: false }, needsOrganization: true });
   }
   try {
-    const { data, error } = await getSupabaseAdmin()
+    const { data: rawData, error } = await getSupabaseAdmin()
       .from("organization_subscriptions")
       .select("plan_key,status,current_period_end,cancel_at_period_end,stripe_customer_id")
       .eq("clerk_org_id", tenant.organizationId)
       .maybeSingle();
     if (error) throw error;
+    const data = rawData as { plan_key: string; status: string; current_period_end: string | null; cancel_at_period_end: boolean; stripe_customer_id: string | null } | null;
     return NextResponse.json({ subscription: {
       status: data?.status ?? "free",
       plan: data?.plan_key ?? null,
