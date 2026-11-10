@@ -4,8 +4,9 @@ import { getTenantContext } from "@/lib/tenancy";
 import { recordAIUsage } from "@/lib/ai-usage";
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  const tenant = await getTenantContext().catch(() => null);
+  const userId = tenant?.userId;
+  if (!tenant || !userId) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   if (!process.env.OPENAI_API_KEY) return NextResponse.json({ error: "AI provider is not configured. Add OPENAI_API_KEY to the server environment." }, { status: 503 });
   try {
     const body: unknown = await req.json().catch(() => null);
