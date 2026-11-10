@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { auth } from "@clerk/nextjs/server";
+import { getTenantContext } from "@/lib/tenancy";
 import { recordAIUsage } from "@/lib/ai-usage";
 
 export async function POST(req: Request) {
