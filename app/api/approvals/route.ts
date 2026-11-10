@@ -4,14 +4,10 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 const allowedActions = new Set(["send_email", "update_crm", "publish_content", "modify_code", "external_action", "other"]);
 
-async function owner() {
-  const { userId } = await auth();
-  return userId;
-}
-
 export async function GET() {
-  const userId = await owner();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const tenant = await getTenantContext().catch(() => null);
+  const userId = tenant?.userId;
+  if (!tenant || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const { data, error } = await getSupabaseAdmin().from("workspace_items")
       .select("id,title,description,content,status,created_at,updated_at")
@@ -27,8 +23,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const userId = await owner();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const tenant = await getTenantContext().catch(() => null);
+  const userId = tenant?.userId;
+  if (!tenant || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "A JSON object is required." }, { status: 400 });
   const actionType = typeof body.actionType === "string" ? body.actionType : "other";
@@ -55,8 +52,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const userId = await owner();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const tenant = await getTenantContext().catch(() => null);
+  const userId = tenant?.userId;
+  if (!tenant || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body) || typeof body.id !== "string" || !body.id || !["approved", "rejected"].includes(body.decision)) {
     return NextResponse.json({ error: "A valid request id and approved/rejected decision are required." }, { status: 400 });
@@ -64,7 +62,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
     const { data: existingRaw, error: readError } = await supabase.from("workspace_items").select("id,status,content,title")
-      .eq("id", body.id).eq("user_id", userId).eq("section", "agents").like("title", "Approval: %").maybeSingle();
+      .eq("id", body.id).eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId).filter("clerk_org_id", tenant.organizationId ? "eq" : "is", tenant.organizationId ?? "null").eq("section", "agents").like("title", "Approval: %").maybeSingle();
     if (readError) throw readError;
     const existing = existingRaw as unknown as { id: string; status: string; content: unknown; title: string } | null;
     if (!existing) return NextResponse.json({ error: "Approval request not found." }, { status: 404 });
@@ -72,11 +70,11 @@ export async function PATCH(request: NextRequest) {
     const content = existing.content && typeof existing.content === "object" && !Array.isArray(existing.content) ? existing.content as Record<string, unknown> : {};
     const { data, error } = await supabase.from("workspace_items").update({
       status: body.decision, content: { ...content, decision: body.decision, decidedAt: new Date().toISOString() }, updated_at: new Date().toISOString(),
-    } as never).eq("id", body.id).eq("user_id", userId).eq("section", "agents").eq("status", "pending_approval")
+    } as never).eq("id", body.id).eq(tenant.organizationId ? "clerk_org_id" : "user_id", tenant.organizationId ?? userId).filter("clerk_org_id", tenant.organizationId ? "eq" : "is", tenant.organizationId ?? "null").eq("section", "agents").eq("status", "pending_approval")
       .select("id,title,description,content,status,created_at,updated_at").maybeSingle();
     if (error) throw error;
     if (!data) return NextResponse.json({ error: "This request has already been decided." }, { status: 409 });
-    await supabase.from("activity_logs").insert({ user_id: userId, event_type: `approval.${body.decision}`, description: `An action request was ${body.decision}`, metadata: { approval_id: body.id } } as never);
+    await supabase.from("activity_logs").insert({ user_id: userId, clerk_org_id: tenant.organizationId, event_type: `approval.${body.decision}`, description: `An action request was ${body.decision}`, metadata: { approval_id: body.id } } as never);
     return NextResponse.json({ approval: data, executed: false, message: "Decision saved. Approval does not execute the proposed action." });
   } catch (error) {
     console.error("[approvals:PATCH]", error);
