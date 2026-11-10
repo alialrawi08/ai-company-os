@@ -75,11 +75,11 @@ export async function POST(request: NextRequest) {
           organizationId,
           customerId: typeof object.customer === "string" ? object.customer : object.customer?.id ?? null,
           subscriptionId: typeof object.subscription === "string" ? object.subscription : object.subscription?.id ?? null,
-          status: object.payment_status === "paid" || object.mode === "subscription" ? "active" : "incomplete",
+          status: object.payment_status === "paid" ? "active" : object.payment_status === "no_payment_required" ? "trialing" : "incomplete",
           plan,
         });
       }
-    } else if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
+    } else if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
       const organizationId = object?.metadata?.clerk_org_id;
       const plan = object?.metadata?.plan;
       if (typeof organizationId === "string") {
