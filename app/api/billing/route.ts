@@ -50,12 +50,13 @@ export async function POST(request: NextRequest) {
   const action = body && typeof body === "object" ? body.action : null;
 
   try {
-    const { data: subscription, error } = await getSupabaseAdmin()
+    const { data: rawSubscription, error } = await getSupabaseAdmin()
       .from("organization_subscriptions")
       .select("stripe_customer_id")
       .eq("clerk_org_id", tenant.organizationId)
       .maybeSingle();
     if (error) throw error;
+    const subscription = rawSubscription as { stripe_customer_id: string | null } | null;
 
     const params = new URLSearchParams();
     let endpoint: string;
