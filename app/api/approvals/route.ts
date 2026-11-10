@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
   const tenant = await getTenantContext().catch(() => null);
   const userId = tenant?.userId;
   if (!tenant || !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (tenant.organizationId && tenant.role !== "admin") return NextResponse.json({ error: "Only company admins can approve or reject actions." }, { status: 403 });
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "A JSON object is required." }, { status: 400 });
   const actionType = typeof body.actionType === "string" ? body.actionType : "other";
