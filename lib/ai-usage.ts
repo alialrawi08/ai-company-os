@@ -8,13 +8,13 @@ type UsageInput = {
   model: string;
   promptTokens: number;
   completionTokens: number;
-  totalTokens: number;
+  totalTokens: number;\n  clerkOrgId?: string | null;
 };
 
 export async function recordAIUsage(input: UsageInput) {
   try {
     const { error } = await getSupabaseAdmin().from("ai_usage_events").insert({
-      user_id: input.userId,
+      user_id: input.userId,\n      clerk_org_id: input.clerkOrgId ?? null,
       agent_role: input.agentRole.toLowerCase(),
       feature: input.feature,
       model: input.model,
