@@ -3,6 +3,7 @@ import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useEffect,useState} from "react";
 import RouteTransition from "@/components/dashboard/RouteTransition";
+import GlobalAraskoEye from "@/components/dashboard/GlobalAraskoEye";
 import {Activity,Bot,FileText,FolderKanban,Globe2,LayoutDashboard,Menu,PhoneCall,Settings,Users,UsersRound,X,Search,Bell,Command,ShieldCheck,CreditCard} from "lucide-react";
 type Language="en"|"sv"|"ar";
 const languages:{value:Language;label:string}[]=[{value:"en",label:"English"},{value:"sv",label:"Svenska"},{value:"ar",label:"العربية"}];
@@ -18,7 +19,7 @@ export default function DashboardLayout({children}:{children:React.ReactNode}){
  useEffect(()=>{document.documentElement.lang=language;document.documentElement.dir=language==="ar"?"rtl":"ltr";window.localStorage.setItem("ai-company-os-language",language);},[language]);
  useEffect(()=>{setMobileOpen(false);},[pathname]);
  const navigation=<nav aria-label={t.menu} className="flex-1 space-y-1.5 overflow-y-auto p-3">{items.map(({key,href,icon:Icon})=>{const active=pathname===href||(href!=="/dashboard"&&pathname.startsWith(href+"/"));return <Link key={href} href={href} onClick={()=>setMobileOpen(false)} className={`group flex min-h-12 items-center gap-3 rounded-2xl border px-3.5 py-3 text-sm font-medium transition-all duration-300 ${active?"border-white/25 bg-white/[.075] text-white shadow-[inset_0_1px_0_rgba(255,255,255,.10),0_8px_28px_rgba(0,0,0,.28)]":"border-white/[.07] bg-white/[.025] text-slate-200/75 hover:border-white/15 hover:bg-white/[.07] hover:text-white"}`}><Icon size={18}/><span>{t[key]}</span>{active&&<span className="ml-auto h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,.8)]"/>}</Link>})}</nav>;
- return <div className="relative min-h-screen text-white md:flex">
+ return <div className="relative min-h-screen text-white md:flex">\n  <GlobalAraskoEye />
   <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_52%_0%,rgba(210,215,230,.12),transparent_42%),linear-gradient(135deg,rgba(0,0,0,.78),rgba(18,19,24,.5))]"/>
   <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col border-r border-white/15 bg-[#08090c]/78 text-white shadow-[18px_0_70px_rgba(0,0,0,.5)] backdrop-blur-3xl md:flex">
    <Link href="/dashboard" className="border-b border-white/15 px-5 py-6"><div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/30 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,.55),rgba(150,155,170,.18)_45%,rgba(8,9,12,.95)_80%)] text-xs font-black tracking-tight shadow-lg">AF</span><span><strong className="block text-[15px] tracking-wide">AF QELVION</strong><small className="mt-1 block text-[11px] text-slate-300/70">{t.workspace}</small></span></div></Link>
