@@ -9,8 +9,9 @@ export const runtime = "nodejs";
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  const tenant = await getTenantContext().catch(() => null);
+  const userId = tenant?.userId;
+  if (!tenant || !userId) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   if (!process.env.OPENAI_API_KEY) return NextResponse.json({ error: "AI provider is not configured. Add OPENAI_API_KEY to the server environment." }, { status: 503 });
 
   try {
@@ -75,6 +76,7 @@ export async function POST(request: Request) {
     if (response.usage) {
       await recordAIUsage({
         userId,
+        clerkOrgId: tenant.organizationId,
         agentRole: "assistant",
         feature: "arasko",
         model: response.model,
