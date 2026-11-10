@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { auth } from "@clerk/nextjs/server";
+import { getTenantContext } from "@/lib/tenancy";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { recordAIUsage } from "@/lib/ai-usage";
 
@@ -16,12 +16,12 @@ function redactMemoryText(value:string, maxLength:number) {
     .slice(0,maxLength);
 }
 
-async function loadCompanyContext(userId:string) {
+async function loadCompanyContext(userId:string, organizationId:string | null) {
   const supabase=getSupabaseAdmin();
   const [workspaceResult,runsResult,activityResult,approvalResult]=await Promise.all([
     supabase.from("workspace_items")
       .select("section,title,description,status,content,updated_at")
-      .eq("user_id",userId).in("section",["projects","crm","documents","settings"])
+      .eq(organizationId ? "clerk_org_id" : "user_id", organizationId ?? userId).filter("clerk_org_id", organizationId ? "eq" : "is", organizationId ?? "null").in("section",["projects","crm","documents","settings"])
       .order("updated_at",{ascending:false}).limit(40),
     supabase.from("agent_runs")
       .select("agent_role,task,result,created_at")
@@ -117,7 +117,7 @@ async function loadRepositoryContext() {
   };
 }
 
-async function runModel(client:OpenAI,role:AgentRole,task:string,context:unknown,userId:string,extra="",language:"en"|"sv"|"ar"="en") {
+async function runModel(client:OpenAI,role:AgentRole,task:string,context:unknown,userId:string,organizationId:string | null,extra="",language:"en"|"sv"|"ar"="en") {
   const languageName=language==="ar"?"Arabic":language==="sv"?"Swedish":"English";
   const response=await client.responses.create({
     model:process.env.OPENAI_MODEL||"gpt-5-mini",max_output_tokens:role==="CEO"?3600:2200,
@@ -142,7 +142,7 @@ export async function GET(){
   const {userId}=await auth();
   if(!userId)return NextResponse.json({error:"Authentication required"},{status:401});
   try{
-    const {data,error}=await getSupabaseAdmin().from("agent_runs").select("id,agent_role,task,result,status,created_at").eq("user_id",userId).order("created_at",{ascending:false}).limit(20);
+    const {data,error}=await getSupabaseAdmin().from("agent_runs").select("id,agent_role,task,result,status,created_at").eq(tenant.organizationId ? "clerk_org_id" : "user_id",tenant.organizationId ?? userId).filter("clerk_org_id",tenant.organizationId ? "eq" : "is",tenant.organizationId ?? "null").order("created_at",{ascending:false}).limit(20);
     if(error)throw error;
     return NextResponse.json({runs:data??[]});
   }catch(error){console.error("Agent history load failed",error);return NextResponse.json({error:"Could not load agent history. Check database configuration."},{status:503});}
@@ -161,7 +161,7 @@ export async function POST(request:Request){
     const language=payload.language==="ar"||payload.language==="sv"?payload.language:"en";
     if(!roles.includes(role))return NextResponse.json({error:"Unknown agent role"},{status:400});
     if(!task||task.length>12000)return NextResponse.json({error:"Task must be between 1 and 12000 characters"},{status:400});
-    const context=await loadCompanyContext(userId);
+    const context=await loadCompanyContext(userId,tenant.organizationId);
     const client=new OpenAI({apiKey:process.env.OPENAI_API_KEY,timeout:60000,maxRetries:1});
     let result:string;
     const delegated:Array<{role:AgentRole;result:string}>=[];
@@ -177,21 +177,21 @@ export async function POST(request:Request){
       if(selected.length===0){add("Research");add("Finance");add("Marketing");}
       const repositoryContext=await loadRepositoryContext();
       const ceoContext={...context,repository:repositoryContext};
-      const specialistResults=await Promise.all(selected.map(async specialist=>{const specialistContext=specialist==="Developer"?ceoContext:context;return {role:specialist,result:await runModel(client,specialist,task,specialistContext,userId,"Prepare findings for the CEO. Focus on evidence, options, risks, and recommended next actions.",language)};}));
+      const specialistResults=await Promise.all(selected.map(async specialist=>{const specialistContext=specialist==="Developer"?ceoContext:context;return {role:specialist,result:await runModel(client,specialist,task,specialistContext,userId,tenant.organizationId,"Prepare findings for the CEO. Focus on evidence, options, risks, and recommended next actions.",language)};}));
       delegated.push(...specialistResults);
       const teamBrief=delegated.map(x=>`## ${x.role} Agent\\n${x.result}`).join("\\n\\n");
-      result=await runModel(client,"CEO",task,ceoContext,userId,`You have delegated this request to your specialist team. Their reports follow. Synthesize them into an executive decision brief with: Executive summary; decisions; prioritized action plan (owner, sequence, success metric); dependencies; risks; and items that require the user's explicit approval. Do not invent agent work beyond these reports.\\n\\nSPECIALIST REPORTS:\\n${teamBrief}`,language);
+      result=await runModel(client,"CEO",task,ceoContext,userId,tenant.organizationId,`You have delegated this request to your specialist team. Their reports follow. Synthesize them into an executive decision brief with: Executive summary; decisions; prioritized action plan (owner, sequence, success metric); dependencies; risks; and items that require the user's explicit approval. Do not invent agent work beyond these reports.\\n\\nSPECIALIST REPORTS:\\n${teamBrief}`,language);
     }else{
       const agentContext=role==="Developer"?{workspace:context,repository:await loadRepositoryContext()}:context;
-      result=await runModel(client,role,task,agentContext,userId,"",language);
+      result=await runModel(client,role,task,agentContext,userId,tenant.organizationId,"",language);
     }
     const supabase=getSupabaseAdmin();
     const saved:unknown[]=[];
     for(const entry of [...delegated,{role,result}]){
-      const {data,error}=await supabase.from("agent_runs").insert({user_id:userId,agent_role:entry.role.toLowerCase(),task:role==="CEO"?`[CEO delegation] ${task}`:task,result:entry.result,status:"completed"} as never).select("id,agent_role,task,result,status,created_at").single();
+      const {data,error}=await supabase.from("agent_runs").insert({user_id:userId,clerk_org_id:tenant.organizationId,agent_role:entry.role.toLowerCase(),task:role==="CEO"?`[CEO delegation] ${task}`:task,result:entry.result,status:"completed"} as never).select("id,agent_role,task,result,status,created_at").single();
       if(error)throw error;
       saved.push(data);
-      await supabase.from("activity_logs").insert({user_id:userId,event_type:"agent.completed",description:`${entry.role} agent completed a task`,metadata:{agent_role:entry.role.toLowerCase(),orchestrated_by:role==="CEO"?"ceo":null}} as never);
+      await supabase.from("activity_logs").insert({user_id:userId,clerk_org_id:tenant.organizationId,event_type:"agent.completed",description:`${entry.role} agent completed a task`,metadata:{agent_role:entry.role.toLowerCase(),orchestrated_by:role==="CEO"?"ceo":null}} as never);
     }
     return NextResponse.json({role,result,run:saved[saved.length-1],delegated:delegated.map(x=>x.role),teamRuns:saved});
   }catch(error){console.error("Agent execution failed",error);return NextResponse.json({error:"The agent team could not complete or save this task."},{status:500});}
