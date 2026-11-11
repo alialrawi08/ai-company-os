@@ -82,3 +82,9 @@ Database inspection found RLS enabled on the listed public tables. Supabase Secu
 ## Release definition
 
 QELVION is ready for a controlled pilot only when tenant-isolation tests, role checks, billing test flows, approval-gated actions, audit logging, failure recovery and end-to-end workflows pass in an isolated staging environment. A successful Next.js build alone is not production readiness.
+
+
+## Documentation delivered
+
+- [x] Swedish customer-facing product guide: `docs/PRODUCT-GUIDE-SV.md`.
+- [x] Link product guide from the repository README.
