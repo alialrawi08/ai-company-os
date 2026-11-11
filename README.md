@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AF QELVION
 
-## Getting Started
+**QELVION is an AI Workforce Platform for modern companies.**
 
-First, run the development server:
+It brings company operations, projects, customer relationships, documents, analytics and AI teammates into one workspace. Arasko is the executive AI assistant and orchestration layer; specialist agents support research, sales, engineering, marketing, finance and customer support.
+
+## Current platform foundation
+
+- Next.js 16, React 19 and TypeScript
+- Clerk authentication and organisation context
+- Supabase workspace, agent-run, activity, AI-usage and billing data
+- Arasko assistant and CEO-led specialist orchestration
+- Approval queue for consequential actions
+- Stripe billing foundation
+- Vercel Preview deployments from `feat/agent-foundation`
+
+## Product principle
+
+QELVION is designed for people and AI agents to work together. Agents can analyse, research, prepare drafts and manage permitted internal workflows. External communications, financial transactions, legal commitments, employment decisions, destructive actions and Production releases require explicit human approval.
+
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Required server-side integrations are configured through environment variables. Never expose Supabase service-role credentials, OpenAI keys, Stripe secrets or Clerk secret keys through `NEXT_PUBLIC_*` variables.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Delivery plan
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+See [docs/AI-WORKFORCE-ROADMAP.md](docs/AI-WORKFORCE-ROADMAP.md) for the verified baseline, remaining delivery tracks, security rules and pilot release criteria.
 
-## Learn More
+## Branch and release policy
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Active development is on `feat/agent-foundation`. Do not merge to `main` or promote to Production without explicit owner approval.
