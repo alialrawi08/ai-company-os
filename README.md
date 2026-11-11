@@ -29,7 +29,7 @@ Required server-side integrations are configured through environment variables. 
 
 ## Delivery plan
 
-See [docs/AI-WORKFORCE-ROADMAP.md](docs/AI-WORKFORCE-ROADMAP.md) for the verified baseline, remaining delivery tracks, security rules and pilot release criteria.
+Read the [Swedish product guide](docs/PRODUCT-GUIDE-SV.md) for the customer-facing product overview and usage instructions. See [docs/AI-WORKFORCE-ROADMAP.md](docs/AI-WORKFORCE-ROADMAP.md) for the verified baseline, remaining delivery tracks, security rules and pilot release criteria.
 
 ## Branch and release policy
 
