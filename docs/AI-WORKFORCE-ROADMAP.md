@@ -64,7 +64,7 @@ Database inspection found RLS enabled on the listed public tables. Supabase Secu
 
 ### 7. Release quality
 - [x] Feature branch has Vercel Preview deployment integration.
-- [ ] Add CI checks for lint, typecheck, build, unit tests and dependency/security review.
+- [x] Add GitHub Actions static quality checks for lint and TypeScript type checking.\n- [ ] Add build, unit/integration tests and dependency/security review.
 - [ ] Run end-to-end tests against an isolated staging database and test credentials.
 - [ ] Complete accessibility, mobile and performance reviews.
 - [ ] Require explicit owner approval before merging to main or promoting to Production.
