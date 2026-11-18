@@ -88,3 +88,35 @@ QELVION is ready for a controlled pilot only when tenant-isolation tests, role c
 
 - [x] Swedish customer-facing product guide: `docs/PRODUCT-GUIDE-SV.md`.
 - [x] Link product guide from the repository README.
+
+
+## QELVION controlled launch plan (owner decision: 2026-11-18)
+
+Launch decision:
+- Website: limited company pilot first.
+- Mobile: iOS and Android, developed as a real native app experience rather than a thin website wrapper.
+- Billing: live subscriptions are the target, but Production billing remains disabled until test-mode checkout, webhook signature verification, subscription lifecycle, cancellation, tax configuration and reconciliation pass.
+
+### Release gates — all required before Production
+- [ ] Clerk: verify owner/admin/member mapping, organisation membership lifecycle, MFA/session policy and recovery flows.
+- [ ] Tenant isolation: automated cross-organisation read/write tests for every API route and privileged service-role query.
+- [ ] Supabase: review RLS, grants, policies, indexes, backups, retention and data deletion/export procedures.
+- [ ] Stripe: ensure the API key and Price IDs belong to the same account and mode; test Checkout, successful/failed payment, subscription updates/deletion, webhook retries and billing portal.
+- [ ] Stripe security: obtain the actual endpoint signing secret from the matching account; verify signature and idempotent processing in Preview/staging. Do not use test secrets in Production.
+- [ ] Commercial: confirm Swedish VAT/tax handling, invoices/receipts, cancellation, refunds, terms, privacy notice and DPA.
+- [ ] Operations: structured logs, alerting, error monitoring, rate limits, abuse protection, backups and incident response.
+- [ ] Quality: lint, typecheck, unit/integration tests, production build, accessibility, responsive/mobile, dependency and secret scans.
+- [ ] Pilot: invite only consenting pilot companies, support contact and rollback procedure.
+- [ ] Production release: explicit owner approval after every gate is evidenced.
+
+### Mobile delivery direction
+- [ ] Evaluate Expo + React Native as the shared iOS/Android client, with the existing Next.js app remaining the web product and backend API.
+- [ ] Define mobile authentication with Clerk, API contracts, deep links, secure token storage, push notifications and offline/error states.
+- [ ] Build native navigation and workflows for Dashboard, Arasko, Approvals and Notifications.
+- [ ] Add TestFlight and Google Play internal testing before store review.
+- [ ] Complete Apple/Google privacy disclosures, account deletion, support, screenshots, age/content ratings and store metadata.
+
+### Current blockers known
+- Stripe Preview checkout failed because the configured API key could not retrieve the Pro Price ID from the connected Stripe test account. This is an account/mode mismatch until proven otherwise.
+- The matching Stripe test Price exists and is active; do not alter or recreate prices until the API key/account alignment is fixed.
+- Production deployment and live payment collection are intentionally blocked.

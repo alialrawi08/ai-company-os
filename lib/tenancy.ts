@@ -14,7 +14,7 @@ export async function getTenantContext(): Promise<TenantContext | null> {
 
   const organizationId = session.orgId ?? null;
   const rawRole = session.orgRole ?? "";
-  const role: TenantContext["role"] = rawRole === "org:admin" ? "admin" : "member";
+  const role: TenantContext["role"] = rawRole === "org:owner" ? "owner" : rawRole === "org:admin" ? "admin" : "member";
 
   if (organizationId) {
     const db = getSupabaseAdmin();

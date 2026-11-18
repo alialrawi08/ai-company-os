@@ -30,7 +30,7 @@ export async function GET() {
       plan: data?.plan_key ?? null,
       currentPeriodEnd: data?.current_period_end ?? null,
       cancelAtPeriodEnd: data?.cancel_at_period_end ?? false,
-      canManage: tenant.role === "admin" && typeof data?.stripe_customer_id === "string",
+      canManage: (tenant.role === "admin" || tenant.role === "owner") && typeof data?.stripe_customer_id === "string",
     }});
   } catch (error) {
     console.error("[billing:GET]", error);
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   const tenant = await getTenantContext().catch(() => null);
   if (!tenant) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!tenant.organizationId) return NextResponse.json({ error: "Create or select a company before starting a company subscription." }, { status: 409 });
-  if (tenant.role !== "admin") return NextResponse.json({ error: "Only company admins can manage billing." }, { status: 403 });
+  if (tenant.role !== "admin" && tenant.role !== "owner") return NextResponse.json({ error: "Only company owners or admins can manage billing." }, { status: 403 });
 
   const { secret, proPrice, businessPrice, appUrl } = config();
   if (!secret || !appUrl) return NextResponse.json({ error: "Billing is not configured. Add Stripe and app URL environment variables." }, { status: 503 });
