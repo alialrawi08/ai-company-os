@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     });
     const data = await response.json();
     if (!response.ok || typeof data.url !== "string") {
-      console.error("[billing:stripe]", data?.error?.type);
+      console.error("[billing:stripe]", { type: data?.error?.type, code: data?.error?.code, param: data?.error?.param, message: data?.error?.message });
       return NextResponse.json({ error: "Stripe could not create the billing session." }, { status: 502 });
     }
     return NextResponse.json({ url: data.url });
